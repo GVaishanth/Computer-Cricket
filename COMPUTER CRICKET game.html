@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Computer Cricket</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root {
+  --pitch:#1a2e1a; --pitch-mid:#1e3620; --pitch-light:#243d24;
+  --felt:#162814; --amber:#f5a623; --amber-dim:#9a6410; --amber-bright:#ffc84a;
+  --chalk:#e8e4d4; --chalk-dim:#9e9a8c; --red:#c0392b; --red-bright:#e74c3c;
+  --green-neon:#2ecc71; --blue:#7b9ef0;
+  --panel:#0f1f0f; --border:#2a4a2a; --led-off:#0d1a0d; --radius:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--felt);color:var(--chalk);font-family:'Rajdhani',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:repeating-linear-gradient(90deg,transparent 0px,transparent 38px,rgba(0,0,0,0.08) 38px,rgba(0,0,0,0.08) 40px);}
+.app{position:relative;z-index:1;max-width:780px;margin:0 auto;padding:16px;}
+
+/* HEADER */
+.header{text-align:center;padding:24px 0 16px;border-bottom:1px solid var(--border);margin-bottom:20px;}
+.header h1{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:6px;color:var(--amber);text-shadow:0 0 30px color-mix(in srgb,var(--amber) 30%,transparent);line-height:1;}
+.header .subtitle{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--chalk-dim);letter-spacing:4px;margin-top:4px;}
+
+/* SCOREBOARD */
+.scoreboard{background:var(--panel);border:2px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.score-side{text-align:center;}
+.score-label{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--chalk-dim);margin-bottom:4px;}
+.score-value{font-family:'Share Tech Mono',monospace;font-size:52px;color:var(--amber);text-shadow:0 0 20px color-mix(in srgb,var(--amber) 50%,transparent);line-height:1;transition:all 0.15s;}
+.score-sub{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--chalk-dim);letter-spacing:2px;margin-top:3px;min-height:15px;}
+.score-value.flash{color:var(--amber-bright);text-shadow:0 0 40px color-mix(in srgb,var(--amber-bright) 80%,transparent);}
+.score-value.out-flash{color:var(--red-bright);text-shadow:0 0 40px rgba(231,76,60,0.8);}
+.score-value.multiply-flash{color:var(--green-neon);text-shadow:0 0 40px color-mix(in srgb,var(--green-neon) 80%,transparent);}
+.score-divider{border-left:1px solid var(--border);margin:0 4px;}
+.mode-badge{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--amber-dim);letter-spacing:2px;border-top:1px solid var(--border);padding-top:10px;margin-top:4px;display:flex;justify-content:center;gap:16px;grid-column:1/-1;flex-wrap:wrap;}
+.mode-badge span{color:var(--amber);}
+
+/* LIVE STATS */
+.live-stats{display:flex;gap:8px;margin-bottom:10px;}
+.live-chip{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:5px 10px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--chalk-dim);flex:1;text-align:center;}
+.live-chip strong{color:var(--amber);display:block;font-size:15px;}
+
+/* BALL LOG */
+.ball-log{display:flex;gap:5px;justify-content:center;margin-bottom:10px;align-items:center;}
+.ball-log-label{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--chalk-dim);letter-spacing:1px;margin-right:4px;}
+.ball-pip{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:var(--led-off);display:flex;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--chalk-dim);transition:all 0.2s;flex-shrink:0;}
+.ball-pip.out{background:var(--red);border-color:var(--red-bright);color:#fff;font-size:9px;}
+.ball-pip.mult{background:color-mix(in srgb,var(--blue) 15%,var(--panel));border-color:var(--blue);color:var(--blue);}
+.ball-pip.bonus{background:color-mix(in srgb,var(--amber) 15%,var(--panel));border-color:var(--amber);color:var(--amber);}
+.ball-pip.run{background:color-mix(in srgb,var(--green-neon) 15%,var(--panel));border-color:var(--green-neon);color:var(--green-neon);}
+.ball-pip.new{animation:pipPop 0.25s cubic-bezier(0.175,0.885,0.32,1.275);}
+@keyframes pipPop{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
+
+/* TEST CLASSIC WHITES — light background overrides */
+body.theme-test .out-overlay{background:rgba(240,234,216,0.9);}
+body.theme-test .out-text{color:#b00020;}
+body.theme-test .hit-overlay{background:rgba(240,234,216,0.7);}
+body.theme-test .num-btn{color:var(--chalk);}
+body.theme-test .num-btn:hover{background:color-mix(in srgb,var(--amber) 12%,var(--panel));}
+
+/* NUMBERS DISPLAY */
+.numbers-row{display:flex;gap:10px;justify-content:center;margin-bottom:12px;}
+.num-box{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);width:80px;text-align:center;padding:10px 4px 6px;}
+.num-box-label{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--chalk-dim);margin-bottom:4px;}
+.num-box-val{font-family:'Share Tech Mono',monospace;font-size:32px;color:var(--chalk);transition:all 0.2s;min-height:40px;line-height:40px;}
+.num-box-val.reveal{animation:flip 0.25s ease-out;}
+@keyframes flip{0%{transform:scaleY(0);opacity:0}100%{transform:scaleY(1);opacity:1}}
+.result-tag{font-family:'Share Tech Mono',monospace;font-size:10px;padding:2px 8px;border-radius:3px;margin-top:4px;display:inline-block;}
+.tag-out{background:var(--red);color:#fff;}
+.tag-add{background:#1a3a1a;color:var(--green-neon);}
+.tag-multiply{background:#1a1a3a;color:var(--blue);}
+.tag-add2{background:#2a2a1a;color:var(--amber);}
+
+/* COMMENTARY */
+.commentary{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin-bottom:12px;min-height:44px;font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--chalk);line-height:1.5;}
+.commentary .over-label{color:var(--amber-dim);font-size:11px;margin-bottom:2px;}
+
+/* NUMPAD */
+.numpad-section{margin-bottom:12px;}
+.numpad-prompt{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--chalk-dim);text-align:center;margin-bottom:8px;}
+.numpad{display:grid;gap:8px;justify-content:center;}
+.numpad.pool-10{grid-template-columns:repeat(5,60px);}
+.numpad.pool-4{grid-template-columns:repeat(4,60px);}
+.numpad.pool-6{grid-template-columns:repeat(6,60px);}
+.num-btn{background:var(--pitch-mid);border:1px solid var(--border);border-radius:var(--radius);color:var(--chalk);font-family:'Share Tech Mono',monospace;font-size:20px;height:56px;cursor:pointer;transition:all 0.1s;position:relative;overflow:hidden;}
+.num-btn:hover{background:var(--pitch-light);border-color:var(--amber-dim);color:var(--amber);}
+.num-btn:active{transform:scale(0.93);}
+.num-btn.selected{background:var(--amber-dim);border-color:var(--amber);color:var(--amber-bright);}
+.num-btn.hotkey-hint::after{content:attr(data-key);position:absolute;bottom:3px;right:4px;font-size:8px;color:var(--chalk-dim);opacity:0.5;}
+.kb-hint{text-align:center;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--chalk-dim);opacity:0.5;margin-top:6px;letter-spacing:1px;}
+
+/* ACTION BUTTONS */
+.action-row{display:flex;gap:10px;justify-content:center;margin-bottom:14px;flex-wrap:wrap;}
+.action-btn{background:var(--pitch-mid);border:1px solid var(--border);border-radius:var(--radius);color:var(--chalk);font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;letter-spacing:2px;padding:10px 22px;cursor:pointer;transition:all 0.15s;text-transform:uppercase;}
+.action-btn:hover{border-color:var(--amber);color:var(--amber);}
+.action-btn.primary{background:var(--amber-dim);border-color:var(--amber);color:var(--amber-bright);}
+.action-btn.primary:hover{background:#b07318;}
+
+/* SCREENS */
+.screen{display:none;} .screen.active{display:block;}
+
+/* DIFFICULTY */
+.diff-row{display:flex;gap:8px;justify-content:center;margin-bottom:14px;}
+.diff-btn{flex:1;max-width:140px;padding:8px 12px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;text-align:center;cursor:pointer;border-radius:var(--radius);border:1px solid var(--border);background:var(--panel);color:var(--chalk-dim);transition:all 0.15s;}
+.diff-btn:hover{border-color:var(--amber-dim);color:var(--chalk);}
+.diff-btn.active{border-color:var(--amber);color:var(--amber);background:var(--pitch-mid);}
+.diff-btn .diff-label{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;display:block;margin-bottom:2px;}
+
+/* MODE SELECT */
+.mode-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:16px;}
+.mode-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;cursor:pointer;transition:all 0.15s;}
+.mode-card:hover{border-color:var(--amber-dim);background:var(--pitch-mid);}
+.mode-card.selected{border-color:var(--amber);background:var(--pitch-light);}
+.mode-card h3{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--amber);margin-bottom:4px;}
+.mode-card p{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--chalk-dim);line-height:1.5;}
+.mode-card .mode-stats{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--amber-dim);margin-top:8px;border-top:1px solid var(--border);padding-top:6px;display:flex;gap:8px;}
+.mode-card .mode-stats .pb{color:var(--chalk-dim);margin-left:auto;}
+
+/* STATS BAR */
+.stats-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.stat-chip{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:6px 12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--chalk-dim);flex:1;text-align:center;min-width:80px;}
+.stat-chip strong{display:block;font-size:18px;color:var(--amber);}
+
+/* TOSS */
+.toss-coin{width:100px;height:100px;border-radius:50%;border:3px solid var(--amber);background:var(--amber-dim);margin:20px auto;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--amber-bright);}
+.toss-coin.spinning{animation:coinSpin 1s ease-out;}
+@keyframes coinSpin{0%{transform:rotateY(0) scale(1)}50%{transform:rotateY(720deg) scale(1.15)}100%{transform:rotateY(1440deg) scale(1)}}
+
+/* INNINGS TRACKER */
+.innings-tracker{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:10px;font-family:'Share Tech Mono',monospace;font-size:11px;}
+.innings-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);color:var(--chalk-dim);}
+.innings-row:last-child{border-bottom:none;}
+.innings-row.active{color:var(--amber);}
+.innings-row.done{color:var(--chalk);}
+
+/* BETWEEN INNINGS */
+.inn-summary{background:var(--panel);border:1px solid var(--amber-dim);border-radius:var(--radius);padding:24px 20px;text-align:center;margin-bottom:14px;}
+.inn-summary h3{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:var(--amber);margin-bottom:14px;}
+.inn-scores{display:flex;justify-content:center;gap:30px;margin-bottom:14px;}
+.is-side{text-align:center;font-family:'Share Tech Mono',monospace;}
+.is-label{font-size:10px;color:var(--chalk-dim);letter-spacing:2px;}
+.is-val{font-size:42px;color:var(--amber);}
+.inn-target{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--chalk-dim);margin-bottom:16px;line-height:1.7;}
+.inn-target strong{color:var(--green-neon);}
+
+/* RESULT */
+.result-banner{text-align:center;padding:28px 20px 20px;background:var(--panel);border:2px solid var(--border);border-radius:var(--radius);margin-bottom:16px;}
+.result-banner h2{font-family:'Bebas Neue',sans-serif;font-size:56px;letter-spacing:5px;line-height:1;margin-bottom:6px;}
+.result-banner h2.win{color:var(--green-neon);}
+.result-banner h2.lose{color:var(--red-bright);}
+.result-banner h2.tie{color:var(--amber);}
+.result-banner .margin{font-family:'Share Tech Mono',monospace;font-size:14px;color:var(--chalk-dim);margin-bottom:16px;}
+.result-scores{display:flex;justify-content:center;gap:30px;font-family:'Share Tech Mono',monospace;margin-bottom:14px;}
+.result-score-side{text-align:center;}
+.result-score-side .rs-label{font-size:10px;color:var(--chalk-dim);letter-spacing:2px;}
+.result-score-side .rs-val{font-size:40px;color:var(--amber);}
+.result-extra{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--chalk-dim);display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.result-extra span{background:var(--pitch-mid);border:1px solid var(--border);border-radius:var(--radius);padding:4px 10px;}
+.result-extra span strong{color:var(--amber);}
+
+/* LUCK QUIZ */
+.luck-quiz{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;text-align:center;}
+.luck-quiz h3{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:var(--amber);margin-bottom:8px;}
+.luck-quiz p{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--chalk-dim);margin-bottom:16px;line-height:1.6;}
+.player-badge{display:inline-block;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;padding:6px 20px;border-radius:var(--radius);border:1px solid;}
+.badge-bat{border-color:var(--amber);color:var(--amber);background:rgba(245,166,35,0.1);}
+.badge-bowl{border-color:var(--blue);color:var(--blue);background:rgba(123,158,240,0.1);}
+.badge-all{border-color:var(--green-neon);color:var(--green-neon);background:rgba(46,204,113,0.1);}
+
+/* HISTORY */
+.history-list{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.history-item{display:flex;align-items:center;padding:8px 14px;border-bottom:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:12px;gap:8px;}
+.history-item:last-child{border-bottom:none;}
+.h-mode{color:var(--amber-dim);width:56px;font-size:10px;letter-spacing:1px;}
+.h-diff{font-size:9px;padding:1px 5px;border-radius:3px;border:1px solid var(--border);color:var(--chalk-dim);}
+.h-result{width:40px;font-weight:700;}
+.h-result.win{color:var(--green-neon);} .h-result.lose{color:var(--red-bright);} .h-result.tie{color:var(--amber);}
+.h-scores{color:var(--chalk-dim);flex:1;}
+.h-margin{color:var(--chalk-dim);font-size:10px;}
+
+/* OUT OVERLAY */
+.out-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:100;align-items:center;justify-content:center;flex-direction:column;}
+.out-overlay.show{display:flex;animation:fadeIn 0.1s;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.out-text{font-family:'Bebas Neue',sans-serif;font-size:96px;letter-spacing:10px;color:var(--red-bright);text-shadow:0 0 60px rgba(231,76,60,0.8);animation:outPop 0.3s cubic-bezier(0.175,0.885,0.32,1.275);}
+@keyframes outPop{0%{transform:scale(0.3);opacity:0}100%{transform:scale(1);opacity:1}}
+.out-score{font-family:'Share Tech Mono',monospace;font-size:18px;color:var(--chalk-dim);margin-top:8px;}
+
+/* HIT OVERLAY */
+.hit-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99;align-items:center;justify-content:center;flex-direction:column;pointer-events:none;}
+.hit-overlay.show{display:flex;animation:fadeIn 0.1s;}
+.hit-text{font-family:'Bebas Neue',sans-serif;font-size:64px;letter-spacing:6px;animation:outPop 0.3s cubic-bezier(0.175,0.885,0.32,1.275);}
+.hit-text.multiply{color:var(--blue);text-shadow:0 0 40px rgba(123,158,240,0.8);}
+.hit-text.add2{color:var(--amber-bright);text-shadow:0 0 40px rgba(255,200,74,0.8);}
+.hit-pts{font-family:'Share Tech Mono',monospace;font-size:22px;color:var(--chalk-dim);margin-top:4px;}
+
+/* FOLLOW-ON */
+.follow-on-box{background:#1a1200;border:1px solid var(--amber);border-radius:var(--radius);padding:16px;text-align:center;margin-bottom:12px;font-family:'Share Tech Mono',monospace;}
+.follow-on-box h4{color:var(--amber);font-size:14px;letter-spacing:2px;margin-bottom:6px;}
+.follow-on-box p{font-size:11px;color:var(--chalk-dim);margin-bottom:12px;}
+
+/* B10 DOTS */
+.balls-row{display:flex;gap:5px;justify-content:center;margin-bottom:10px;}
+.ball-dot{width:14px;height:14px;border-radius:50%;background:var(--led-off);border:1px solid var(--border);transition:all 0.2s;}
+.ball-dot.used{background:var(--amber-dim);border-color:var(--amber);}
+.ball-dot.out{background:var(--red);border-color:var(--red-bright);}
+
+/* TABS */
+.tabs{display:flex;margin-bottom:16px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.tab{flex:1;padding:10px;text-align:center;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--chalk-dim);background:var(--panel);border:none;transition:all 0.15s;}
+.tab.active{background:var(--pitch-mid);color:var(--amber);}
+.tab:hover:not(.active){color:var(--chalk);}
+.tab-content{display:none;} .tab-content.active{display:block;}
+
+/* MISC */
+.streak-bar{text-align:center;margin-bottom:8px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--chalk-dim);}
+.streak-bar strong{color:var(--amber);}
+.section-title{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--chalk-dim);margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:6px;}
+.mode-rules-box{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin-bottom:10px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--chalk-dim);line-height:1.7;}
+.mode-rules-box strong{color:var(--amber);}
+
+@media(max-width:480px){
+  .header h1{font-size:36px;}
+  .numpad.pool-10{grid-template-columns:repeat(5,52px);}
+  .score-value{font-size:40px;}
+  .mode-grid{grid-template-columns:1fr 1fr;}
+  .live-stats{flex-wrap:wrap;}
+}
+
+/* BACK BUTTON */
+.back-btn{font-size:12px;letter-spacing:1px;padding:7px 16px;opacity:0.7;}
+.back-btn:hover{opacity:1;border-color:var(--chalk-dim);color:var(--chalk);}
+
+/* THEME TRANSITION */
+body,body::before,.scoreboard,.num-btn,.action-btn,.stat-chip,.live-chip,
+.commentary,.mode-card,.innings-tracker,.history-list,.luck-quiz,.result-banner,
+.inn-summary,.mode-rules-box,.follow-on-box{transition:background 0.4s,border-color 0.4s,color 0.3s;}
+
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="header">
+  <h1>COMPUTER CRICKET</h1>
+  <div class="subtitle">THE HAND CRICKET SIMULATOR</div>
+</div>
+
+<!-- LUCK QUIZ -->
+<div id="screen-luck" class="screen active">
+  <div class="luck-quiz">
+    <h3>Player Profile</h3>
+    <p>ANSWER 10 NUMBERS TO DISCOVER YOUR PLAYER TYPE.<br>THIS AFFECTS TOSS OUTCOME WHEN YOU LOSE.<br>YOU CAN SKIP THIS.</p>
+    <div id="luck-content">
+      <div class="action-row">
+        <button class="action-btn primary" onclick="startLuckQuiz()">START QUIZ</button>
+        <button class="action-btn" onclick="skipLuck()">SKIP</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODE SELECT -->
+<div id="screen-mode" class="screen">
+  <div class="stats-bar">
+    <div class="stat-chip"><strong id="stat-wins">0</strong>WINS</div>
+    <div class="stat-chip"><strong id="stat-losses">0</strong>LOSSES</div>
+    <div class="stat-chip"><strong id="stat-ties">0</strong>TIES</div>
+    <div class="stat-chip"><strong id="stat-highscore">0</strong>HIGH SCORE</div>
+  </div>
+  <div class="streak-bar" id="streak-display"></div>
+
+  <div class="section-title">DIFFICULTY</div>
+  <div class="diff-row">
+    <div class="diff-btn active" id="diff-easy" onclick="setDiff('EASY')">
+      <span class="diff-label">EASY</span>CPU avoids your number
+    </div>
+    <div class="diff-btn" id="diff-normal" onclick="setDiff('NORMAL')">
+      <span class="diff-label">NORMAL</span>CPU picks randomly
+    </div>
+    <div class="diff-btn" id="diff-hard" onclick="setDiff('HARD')">
+      <span class="diff-label">HARD</span>CPU aims to match you
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('modes',event)">PLAY</button>
+    <button class="tab" onclick="showTab('history',event)">HISTORY</button>
+  </div>
+
+  <div id="tab-modes" class="tab-content active">
+    <div class="section-title">SELECT GAME MODE</div>
+    <div class="mode-grid" id="mode-grid"></div>
+    <div class="action-row">
+      <button class="action-btn primary" onclick="startSelectedMode()">PLAY SELECTED MODE</button>
+      <button class="action-btn" onclick="randomMode()">RANDOM MODE</button>
+    </div>
+  </div>
+
+  <div id="tab-history" class="tab-content">
+    <div class="section-title">MATCH HISTORY</div>
+    <div class="history-list" id="history-list">
+      <div style="padding:20px;text-align:center;font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--chalk-dim)">NO MATCHES PLAYED YET</div>
+    </div>
+  </div>
+</div>
+
+<!-- TOSS -->
+<div id="screen-toss" class="screen">
+  <div style="text-align:center;padding:10px 0 20px">
+    <div class="section-title">THE TOSS</div>
+    <div class="toss-coin" id="toss-coin">?</div>
+    <div id="toss-prompt" style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--chalk-dim);margin-bottom:20px">CALL THE TOSS</div>
+    <div class="action-row" id="toss-buttons">
+      <button class="action-btn primary" onclick="callToss('HEADS')">HEADS</button>
+      <button class="action-btn" onclick="callToss('TAILS')">TAILS</button>
+    </div>
+    <div class="action-row"><button class="action-btn back-btn" onclick="goHome()">← MAIN MENU</button></div>
+  </div>
+</div>
+
+<!-- BAT/BOWL CHOICE -->
+<div id="screen-batbowl" class="screen">
+  <div style="text-align:center;padding:10px 0 20px">
+    <div class="section-title">YOU WON THE TOSS</div>
+    <div id="batbowl-prompt" style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--chalk-dim);margin-bottom:20px"></div>
+    <div class="action-row">
+      <button class="action-btn primary" onclick="chooseBatBowl('BAT')">BAT FIRST</button>
+      <button class="action-btn" onclick="chooseBatBowl('BOWL')">BOWL FIRST</button>
+    </div>
+    <div class="action-row"><button class="action-btn back-btn" onclick="goHome()">← MAIN MENU</button></div>
+  </div>
+</div>
+
+<!-- BETWEEN INNINGS BREAK -->
+<div id="screen-innbreak" class="screen" style="text-align:center">
+  <div class="inn-summary">
+    <h3 id="inn-break-title">INNINGS OVER</h3>
+    <div class="inn-scores">
+      <div class="is-side"><div class="is-label">YOU</div><div class="is-val" id="inn-break-you">0</div></div>
+      <div class="is-side"><div class="is-label">CPU</div><div class="is-val" id="inn-break-cpu">0</div></div>
+    </div>
+    <div class="inn-target" id="inn-break-target"></div>
+    <button class="action-btn primary" onclick="innBreakContinue()">CONTINUE →</button>
+  </div>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="screen-game" class="screen">
+  <div class="mode-rules-box" id="mode-rules-box"></div>
+
+  <div class="scoreboard">
+    <div class="score-side">
+      <div class="score-label" id="score-label-you">YOUR SCORE</div>
+      <div class="score-value" id="score-you">0</div>
+      <div class="score-sub" id="score-sub-you"></div>
+    </div>
+    <div class="score-divider"></div>
+    <div class="score-side">
+      <div class="score-label" id="score-label-cpu">CPU SCORE</div>
+      <div class="score-value" id="score-cpu">0</div>
+      <div class="score-sub" id="score-sub-cpu"></div>
+    </div>
+    <div class="mode-badge">
+      <span id="badge-mode">NORMAL</span>
+      <span id="badge-phase">BATTING · INN 1</span>
+      <span id="badge-diff">EASY</span>
+      <span id="badge-target"></span>
+    </div>
+  </div>
+
+  <div class="live-stats">
+    <div class="live-chip"><strong id="stat-runrate">—</strong>RUN RATE</div>
+    <div class="live-chip"><strong id="stat-need">—</strong>NEED/BALL</div>
+    <div class="live-chip"><strong id="stat-innnum">1</strong>INNINGS</div>
+  </div>
+
+  <div class="balls-row" id="balls-indicator" style="display:none">
+    <div class="ball-dot" id="ball-0"></div><div class="ball-dot" id="ball-1"></div>
+    <div class="ball-dot" id="ball-2"></div><div class="ball-dot" id="ball-3"></div>
+    <div class="ball-dot" id="ball-4"></div><div class="ball-dot" id="ball-5"></div>
+    <div class="ball-dot" id="ball-6"></div><div class="ball-dot" id="ball-7"></div>
+    <div class="ball-dot" id="ball-8"></div><div class="ball-dot" id="ball-9"></div>
+  </div>
+
+  <div id="innings-tracker" style="display:none" class="innings-tracker"></div>
+
+  <div class="numbers-row">
+    <div class="num-box"><div class="num-box-label">YOU</div><div class="num-box-val" id="last-you">-</div></div>
+    <div class="num-box"><div class="num-box-label">CPU</div><div class="num-box-val" id="last-cpu">-</div></div>
+    <div class="num-box"><div class="num-box-label">RESULT</div><div class="num-box-val" id="last-result" style="font-size:14px;line-height:normal;padding-top:8px">-</div></div>
+  </div>
+
+  <div class="ball-log">
+    <span class="ball-log-label">LAST 6:</span>
+    <div class="ball-pip" id="pip-0">·</div>
+    <div class="ball-pip" id="pip-1">·</div>
+    <div class="ball-pip" id="pip-2">·</div>
+    <div class="ball-pip" id="pip-3">·</div>
+    <div class="ball-pip" id="pip-4">·</div>
+    <div class="ball-pip" id="pip-5">·</div>
+  </div>
+
+  <div class="commentary">
+    <div class="over-label">COMMENTARY</div>
+    <span id="commentary-text">Waiting for first ball...</span>
+  </div>
+
+  <div class="numpad-section">
+    <div class="numpad-prompt" id="numpad-prompt">ENTER YOUR NUMBER</div>
+    <div class="numpad" id="numpad"></div>
+    <div class="kb-hint">KEYBOARD: 1–9 for 1–9 &nbsp;·&nbsp; 0 for 10</div>
+  </div>
+
+  <div class="follow-on-box" id="follow-on-box" style="display:none">
+    <h4>FOLLOW-ON OPTION</h4>
+    <p id="follow-on-text"></p>
+    <div class="action-row">
+      <button class="action-btn primary" onclick="followOnDecision(true)">ENFORCE FOLLOW-ON</button>
+      <button class="action-btn" onclick="followOnDecision(false)">DECLINE</button>
+    </div>
+  </div>
+  <div class="action-row" style="margin-top:6px">
+    <button class="action-btn back-btn" onclick="goHome()">← MAIN MENU</button>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="screen-result" class="screen">
+  <div class="result-banner">
+    <h2 id="result-heading">YOU WIN</h2>
+    <div class="margin" id="result-margin"></div>
+    <div class="result-scores">
+      <div class="result-score-side"><div class="rs-label">YOU</div><div class="rs-val" id="result-you">0</div></div>
+      <div class="result-score-side"><div class="rs-label">CPU</div><div class="rs-val" id="result-cpu">0</div></div>
+    </div>
+    <div class="result-extra" id="result-extra"></div>
+  </div>
+  <div class="action-row">
+    <button class="action-btn primary" onclick="continueGame()">PLAY AGAIN</button>
+    <button class="action-btn" onclick="changeMode()">CHANGE MODE</button>
+    <button class="action-btn" onclick="randomMode()">RANDOM MODE</button>
+  </div>
+  <div class="action-row"><button class="action-btn back-btn" onclick="goHome()">← MAIN MENU</button></div>
+</div>
+
+</div>
+
+<!-- OUT OVERLAY -->
+<div class="out-overlay" id="out-overlay">
+  <div class="out-text">OUT!</div>
+  <div class="out-score" id="out-score"></div>
+</div>
+
+<!-- BIG HIT OVERLAY -->
+<div class="hit-overlay" id="hit-overlay">
+  <div class="hit-text" id="hit-text"></div>
+  <div class="hit-pts" id="hit-pts"></div>
+</div>
+
+<script>
+const BOWL=[1,2,3,4,5,6,7,8,9,10],BOWLB=[7,8,9,10],BOWLT=[1,2,3,4,5,6];
+const MODES=['NORMAL','CRAZY','INSANE','MAD','NOWAY','B10','TEST'];
+const MODE_INFO={
+  NORMAL:{pool:BOWL, label:'Numbers 1-10',             rules:'SAME = OUT | OTHER = ADD your number'},
+  CRAZY: {pool:BOWL, label:'Numbers 1-10',             rules:'SAME = MULTIPLY (you²) | ADJACENT = OUT | OTHER = ADD'},
+  INSANE:{pool:BOWL, label:'Numbers 1-10',             rules:'SAME = OUT | ADJACENT = MULTIPLY (you×cpu) | OTHER = ADD'},
+  MAD:   {pool:BOWL, label:'Numbers 1-10',             rules:'SAME = ADD (you+cpu) | ADJACENT = OUT | OTHER = MULTIPLY (you×cpu)'},
+  NOWAY: {pool:BOWL, label:'Numbers 1-10',             rules:'SAME = MULTIPLY (you×cpu) | ADJACENT = ADD (you+cpu) | OTHER = OUT'},
+  B10:   {pool:BOWLB,label:'Numbers 7-10 | 10 balls', rules:'SAME = OUT | OTHER = ADD your number'},
+  TEST:  {pool:BOWLT,label:'Numbers 1-6 | 2 innings', rules:'SAME = OUT | OTHER = ADD | FOLLOW-ON at 150-run deficit'},
+};
+const MODE_DESC={
+  NORMAL:'Classic hand cricket. Score runs until you match numbers.',
+  CRAZY: 'Matching squares your score! But adjacents knock you out.',
+  INSANE:'Adjacents bring a massive multiply. Same number ends it.',
+  MAD:   'Matching adds both numbers. Adjacents are lethal. Everything else multiplies.',
+  NOWAY: 'Only adjacent numbers score. Everything else is OUT.',
+  B10:   'High-stakes 10-ball sprint. Powerplay numbers only: 7–10.',
+  TEST:  'Full Test match. Two innings per side. Follow-on rules apply.',
+};
+
+let G={
+  lucky:'ALL', mode:'NORMAL', difficulty:'EASY',
+  batting:true, score:0,
+  yourInnings:[], cpuInnings:[],
+  balls:0, youBatFirst:true, chase:null,
+  followOnEnforced:false,
+  inputLocked:false, selectedNum:null,
+  ballLog:[], lastNum:null, repeatCount:0,
+  wins:0, losses:0, ties:0, highScore:0,
+  streak:0, history:[],
+  modeStats:{},
+  luckStep:0, luckSa:0, luckDi:0, luckPs:0,
+  innBreakCallback:null,
+};
+MODES.forEach(m=>G.modeStats[m]={wins:0,losses:0,ties:0,pb:0});
+
+const COM={
+  run:   ['Good timing!','Clean hit!','Finds the gap!','Running hard!','Safe.','Through the covers!','Back foot punch!','Cheeky deflection!','Well placed!'],
+  big:   ['Thunderous drive!','Maximum power!','Going all the way!','Disappears over the boundary!','HUGE! What a strike!'],
+  crazy: ['SAME — MEGA SQUARED!','Score goes BERSERK!','Psychic connection — SQUARED!'],
+  insane:['ADJACENT — WATCH IT EXPLODE!','So close — and it MULTIPLIES!','Nearly same — MASSIVE!'],
+  mad:   ['MATCHED! Bonus add!','Same number — extra runs!','Synchronised — nice bonus!'],
+  noway_m:['MATCH — MULTIPLIED! NOWAY!','Same number, massive score!'],
+  noway_a:['Adjacent — bonus add! Phew!','So close to out — adds instead!'],
+  out_b: ["OUT! Caught behind!","Stumped! Walk of shame.","Bowled 'em!","Plumb LBW!","Gone!"],
+  out_bw:["WICKET! Got him!","Breakthrough! CPU is OUT!","Timber!","Taken! Great bowling!"],
+  repeat:['Trying the same number again...','You do love that number.','A creature of habit!','Predictable... or genius?'],
+};
+function rnd(a){return a[Math.floor(Math.random()*a.length)];}
+function setCommentary(t){document.getElementById('commentary-text').textContent=t;}
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+}
+
+// ── THEMES ──
+// Each theme overrides the CSS custom properties on :root
+const THEMES={
+  // Afghanistan: midnight navy + red + gold stripe
+  HOME:{
+    '--felt':'#05091a','--panel':'#090e28','--pitch':'#0a0f2e','--pitch-mid':'#0d1438','--pitch-light':'#101a48',
+    '--border':'#1e2a6a','--led-off':'#06091c',
+    '--amber':'#d32011','--amber-dim':'#7a1209','--amber-bright':'#ff4433',
+    '--chalk':'#e8e4d4','--chalk-dim':'#9090a8','--green-neon':'#ffd700','--blue':'#3a7bd5',
+  },
+  // New Zealand: black + silver/white (ABs style)
+  NORMAL:{
+    '--felt':'#0a0a0a','--panel':'#111111','--pitch':'#161616','--pitch-mid':'#1c1c1c','--pitch-light':'#242424',
+    '--border':'#333333','--led-off':'#080808',
+    '--amber':'#d4d4d4','--amber-dim':'#666666','--amber-bright':'#ffffff',
+    '--chalk':'#e8e8e8','--chalk-dim':'#888888','--green-neon':'#cccccc','--blue':'#aaaaaa',
+  },
+  // Australia: dark green + gold
+  CRAZY:{
+    '--felt':'#002200','--panel':'#001a00','--pitch':'#002800','--pitch-mid':'#003000','--pitch-light':'#003a00',
+    '--border':'#1a4a00','--led-off':'#001200',
+    '--amber':'#ffd700','--amber-dim':'#9a8000','--amber-bright':'#ffe84a',
+    '--chalk':'#e8e4d4','--chalk-dim':'#9e9a6c','--green-neon':'#ffe000','--blue':'#00c040',
+  },
+  // India: deep navy + saffron orange
+  INSANE:{
+    '--felt':'#020d24','--panel':'#030f2e','--pitch':'#041238','--pitch-mid':'#061642','--pitch-light':'#081a50',
+    '--border':'#0d2860','--led-off':'#020a1a',
+    '--amber':'#ff6b00','--amber-dim':'#994000','--amber-bright':'#ff9500',
+    '--chalk':'#e8e4d4','--chalk-dim':'#9e9a7c','--green-neon':'#138808','--blue':'#ffffff',
+  },
+  // West Indies: deep maroon + gold
+  MAD:{
+    '--felt':'#200010','--panel':'#1a000c','--pitch':'#280014','--pitch-mid':'#32001a','--pitch-light':'#3c0020',
+    '--border':'#5a0030','--led-off':'#140008',
+    '--amber':'#ffc300','--amber-dim':'#8a6b00','--amber-bright':'#ffe060',
+    '--chalk':'#f0e8dc','--chalk-dim':'#a09070','--green-neon':'#ff9500','--blue':'#4a90d9',
+  },
+  // England: dark navy + bright red
+  NOWAY:{
+    '--felt':'#000d26','--panel':'#000b20','--pitch':'#001030','--pitch-mid':'#00133a','--pitch-light':'#001848',
+    '--border':'#002060','--led-off':'#00080a',
+    '--amber':'#cf0a2c','--amber-dim':'#7a0618','--amber-bright':'#ff3355',
+    '--chalk':'#e4e8f0','--chalk-dim':'#8090a8','--green-neon':'#ffffff','--blue':'#0033cc',
+  },
+  // South Africa: dark forest green + yellow
+  B10:{
+    '--felt':'#0d1e0d','--panel':'#0a1a0a','--pitch':'#102410','--pitch-mid':'#142c14','--pitch-light':'#183618',
+    '--border':'#1e4a1e','--led-off':'#081208',
+    '--amber':'#ffb612','--amber-dim':'#8a6000','--amber-bright':'#ffce50',
+    '--chalk':'#e8e4d4','--chalk-dim':'#a09870','--green-neon':'#ffb612','--blue':'#e03a2e',
+  },
+  // Classic Whites: cream/parchment bg, dark navy text, sepia
+  TEST:{
+    '--felt':'#f0ead8','--panel':'#e8e0c8','--pitch':'#ddd8c0','--pitch-mid':'#d4ccb0','--pitch-light':'#ccc4a8',
+    '--border':'#b8b098','--led-off':'#c8c0a8',
+    '--amber':'#1a3a5c','--amber-dim':'#4a6a8c','--amber-bright':'#0a2040',
+    '--chalk':'#1a1a1a','--chalk-dim':'#4a4a4a','--green-neon':'#1a4a1a','--blue':'#1a1a6a',
+  },
+};
+
+function applyTheme(themeKey){
+  const t=THEMES[themeKey]||THEMES.HOME;
+  const root=document.documentElement;
+  Object.entries(t).forEach(([k,v])=>root.style.setProperty(k,v));
+  document.body.classList.toggle('theme-test', themeKey==='TEST');
+}
+
+function goHome(){
+  applyTheme('HOME');
+  show('mode');
+  renderModeSelect();
+}
+function showTab(name,ev){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  ev.target.classList.add('active');
+  if(name==='history') renderHistory();
+}
+
+// ── DIFFICULTY ──
+let difficulty='EASY';
+function setDiff(d){
+  difficulty=d;
+  ['EASY','NORMAL','HARD'].forEach(x=>document.getElementById('diff-'+x.toLowerCase()).classList.toggle('active',x===d));
+}
+function cpuPick(pool,lastNum){
+  if(difficulty==='EASY'){
+    const f=pool.filter(n=>n!==lastNum);
+    return rnd(f.length?f:pool);
+  }
+  if(difficulty==='HARD'){
+    if(lastNum!==null&&Math.random()<0.4){
+      const adj=pool.filter(n=>Math.abs(n-lastNum)<=1);
+      if(adj.length) return rnd(adj);
+    }
+    return rnd(pool);
+  }
+  return rnd(pool);
+}
+
+// ── LUCK QUIZ ──
+function startLuckQuiz(){G.luckStep=0;G.luckSa=0;G.luckDi=0;G.luckPs=0;renderLuckStep();}
+function skipLuck(){G.lucky='ALL';applyTheme('HOME');show('mode');renderModeSelect();}
+function renderLuckStep(){
+  const el=document.getElementById('luck-content');
+  if(G.luckStep>=10){
+    if((G.luckSa>=1||G.luckPs>=3)&&G.luckDi<=3) G.lucky='BALL';
+    else if((G.luckSa<=1||G.luckPs<=1)&&G.luckDi>=5) G.lucky='BAT';
+    else G.lucky='ALL';
+    const labels={BAT:'BATSMAN',BALL:'BOWLER',ALL:'ALL-ROUNDER'};
+    const badge={BAT:'badge-bat',BALL:'badge-bowl',ALL:'badge-all'};
+    const desc={BAT:'You bat even when you lose the toss.',BALL:'You bowl even when you lose the toss.',ALL:'The toss decides everything.'};
+    el.innerHTML=`<p style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--chalk-dim);margin-bottom:12px">QUIZ COMPLETE! YOUR PLAYER TYPE:</p>
+      <div class="player-badge ${badge[G.lucky]}">${labels[G.lucky]}</div>
+      <p style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--chalk-dim);margin-top:10px;margin-bottom:16px">${desc[G.lucky]}</p>
+      <div class="action-row"><button class="action-btn primary" onclick="applyTheme('HOME');show('mode');renderModeSelect()">START PLAYING</button></div>`;
+    return;
+  }
+  const c=BOWL[Math.floor(Math.random()*BOWL.length)];
+  el.innerHTML=`<p style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--chalk-dim);margin-bottom:12px">ROUND ${G.luckStep+1}/10 — PICK A NUMBER:</p>
+    <div class="numpad pool-10" style="justify-content:center;margin-bottom:12px">${BOWL.map(n=>`<button class="num-btn" onclick="luckPick(${n},${c})">${n}</button>`).join('')}</div>`;
+}
+function luckPick(n,c){
+  const d=Math.abs(n-c);
+  if(n===c) G.luckSa++; else if(d===1) G.luckPs++; else G.luckDi++;
+  document.getElementById('luck-content').innerHTML=`<p style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--chalk-dim);margin-bottom:8px">
+    YOU: <strong style="color:var(--amber)">${n}</strong>&nbsp;&nbsp;CPU: <strong style="color:var(--chalk)">${c}</strong>&nbsp;&nbsp;
+    ${n===c?'<span style="color:var(--green-neon)">SAME!</span>':d===1?'<span style="color:var(--amber)">ADJACENT</span>':'<span style="color:var(--chalk-dim)">DIFFERENT</span>'}
+  </p>`;
+  G.luckStep++; setTimeout(renderLuckStep,700);
+}
+
+// ── MODE SELECT ──
+let selectedMode='NORMAL';
+function renderModeSelect(){
+  document.getElementById('mode-grid').innerHTML=MODES.map(m=>{
+    const ms=G.modeStats[m];
+    const ac=MODE_ACCENT[m], bg=MODE_ACCENT_BG[m];
+    const sel=m===selectedMode;
+    return `<div class="mode-card ${sel?'selected':''}" onclick="selectMode('${m}')"
+      style="border-color:${sel?ac:'rgba(255,255,255,0.1)'};background:${sel?bg:'var(--panel)'}">
+      <h3 style="color:${ac}">${m}</h3>
+      <p>${MODE_DESC[m]}<br><span style="color:${ac};opacity:0.6">${MODE_INFO[m].label}</span></p>
+      <div class="mode-stats" style="color:${ac};opacity:0.7">W:${ms.wins} L:${ms.losses} T:${ms.ties}<span class="pb" style="color:var(--chalk-dim)">PB:${ms.pb}</span></div>
+    </div>`;
+  }).join('');
+  updateGlobalStats(); updateStreakDisplay();
+}
+function selectMode(m){selectedMode=m;renderModeSelect();}
+function updateGlobalStats(){
+  document.getElementById('stat-wins').textContent=G.wins;
+  document.getElementById('stat-losses').textContent=G.losses;
+  document.getElementById('stat-ties').textContent=G.ties;
+  document.getElementById('stat-highscore').textContent=G.highScore;
+}
+function updateStreakDisplay(){
+  const el=document.getElementById('streak-display');
+  if(!G.streak){el.innerHTML='';return;}
+  el.innerHTML=G.streak>0?`WIN STREAK: <strong>${G.streak}</strong>`:`LOSS STREAK: <strong>${Math.abs(G.streak)}</strong>`;
+}
+function startSelectedMode(){beginGame(selectedMode);}
+function randomMode(){const m=MODES[Math.floor(Math.random()*MODES.length)];selectedMode=m;beginGame(m);}
+function changeMode(){applyTheme('HOME');show('mode');renderModeSelect();}
+function continueGame(){beginGame(G.mode);}
+
+// ── TOSS ──
+function beginGame(mode){
+  G.mode=mode; G.difficulty=difficulty;
+  G.yourInnings=[]; G.cpuInnings=[];
+  G.followOnEnforced=false; G.youBatFirst=true; G.innBreakCallback=null;
+  applyTheme(mode);
+  show('toss');
+  document.getElementById('toss-coin').textContent='?';
+  document.getElementById('toss-prompt').textContent='CALL THE TOSS';
+  document.getElementById('toss-buttons').style.display='flex';
+}
+function callToss(call){
+  document.getElementById('toss-buttons').style.display='none';
+  const coin=document.getElementById('toss-coin');
+  coin.classList.add('spinning');
+  setTimeout(()=>{
+    coin.classList.remove('spinning');
+    const result=Math.random()<0.5?'HEADS':'TAILS';
+    coin.textContent=result;
+    const won=(call===result);
+    const prompt=document.getElementById('toss-prompt');
+    if(won){
+      prompt.textContent='YOU WON THE TOSS!';
+      document.getElementById('batbowl-prompt').textContent='CHOOSE TO BAT OR BOWL FIRST';
+      setTimeout(()=>show('batbowl'),700);
+    } else {
+      let cpuChoice=Math.random()<0.5?'BAT':'BOWL';
+      if(G.lucky==='BAT') cpuChoice='BOWL';
+      if(G.lucky==='BALL') cpuChoice='BAT';
+      const youBat=(cpuChoice==='BOWL');
+      prompt.textContent=`YOU LOST. CPU CHOSE TO ${cpuChoice}. YOU WILL ${youBat?'BAT':'BOWL'}.`;
+      setTimeout(()=>launchFirstInning(youBat),1500);
+    }
+  },1100);
+}
+function chooseBatBowl(c){launchFirstInning(c==='BAT');}
+function launchFirstInning(youBat){G.youBatFirst=youBat;startInning(youBat,null);}
+
+// ── INNING START ──
+function startInning(youBat,chase){
+  G.batting=youBat; G.score=0; G.balls=0; G.chase=chase;
+  G.inputLocked=false; G.selectedNum=null;
+  G.lastNum=null; G.repeatCount=0; G.ballLog=[];
+
+  show('game');
+  const info=MODE_INFO[G.mode];
+  document.getElementById('mode-rules-box').innerHTML=`<strong>${G.mode}</strong>&nbsp;|&nbsp;${info.label}&nbsp;|&nbsp;${info.rules}`;
+
+  // B10 dots
+  const bi=document.getElementById('balls-indicator');
+  if(G.mode==='B10'){bi.style.display='flex';for(let i=0;i<10;i++) document.getElementById('ball-'+i).className='ball-dot';}
+  else bi.style.display='none';
+
+  document.getElementById('follow-on-box').style.display='none';
+  updateInningsTracker(); resetDisplayNumbers(); resetBallLog(); buildNumpad();
+
+  const innNum=G.yourInnings.length+G.cpuInnings.length+1;
+  document.getElementById('badge-mode').textContent=G.mode;
+  document.getElementById('badge-phase').textContent=(youBat?'BATTING':'BOWLING')+' · INN '+innNum;
+  document.getElementById('badge-diff').textContent=G.difficulty;
+  document.getElementById('score-label-you').textContent=youBat?'YOUR SCORE':'BALLS BOWLED';
+  document.getElementById('score-label-cpu').textContent=youBat?'BALLS BOWLED':'CPU SCORE';
+  document.getElementById('score-sub-you').textContent='';
+  document.getElementById('score-sub-cpu').textContent='';
+  document.getElementById('badge-target').textContent=chase!==null?`TARGET: ${chase+1}`:'';
+  document.getElementById('stat-innnum').textContent=innNum;
+  updateScoreboardFull(); updateLiveStats();
+  setCommentary(youBat?"You stride to the crease. Let's bat!":"You have the ball. Bowl 'em out!");
+  document.getElementById('numpad-prompt').textContent=youBat?'ENTER YOUR BATTING NUMBER':'ENTER YOUR BOWLING NUMBER';
+}
+
+// ── SCOREBOARD ──
+function updateScoreboardFull(){
+  const yd=G.yourInnings.reduce((a,b)=>a+b,0);
+  const cd=G.cpuInnings.reduce((a,b)=>a+b,0);
+  if(G.batting){
+    document.getElementById('score-you').textContent=yd+G.score;
+    document.getElementById('score-cpu').textContent=G.balls;
+    document.getElementById('score-sub-you').textContent='';
+    document.getElementById('score-sub-cpu').textContent=G.balls===1?'BALL BOWLED':'BALLS BOWLED';
+  } else {
+    document.getElementById('score-cpu').textContent=cd+G.score;
+    document.getElementById('score-you').textContent=G.balls;
+    document.getElementById('score-sub-cpu').textContent='';
+    document.getElementById('score-sub-you').textContent=G.balls===1?'BALL BOWLED':'BALLS BOWLED';
+  }
+}
+function updateLiveStats(){
+  const rr=G.balls>0?(G.score/G.balls).toFixed(2):'—';
+  document.getElementById('stat-runrate').textContent=G.batting?rr:'—';
+  if(G.chase!==null&&G.batting){
+    const runsLeft=Math.max(0,G.chase-G.score+1);
+    if(G.mode==='B10'){
+      const bl=10-G.balls;
+      document.getElementById('stat-need').textContent=bl>0?(runsLeft/bl).toFixed(1):'—';
+    } else {
+      document.getElementById('stat-need').textContent=runsLeft+'R';
+    }
+  } else {
+    document.getElementById('stat-need').textContent='—';
+  }
+}
+function flashScore(cls){
+  const el=document.getElementById(G.batting?'score-you':'score-cpu');
+  el.classList.add(cls); setTimeout(()=>el.classList.remove(cls),400);
+}
+
+// ── BALL LOG ──
+function resetBallLog(){
+  G.ballLog=[];
+  for(let i=0;i<6;i++){const p=document.getElementById('pip-'+i);p.className='ball-pip';p.textContent='·';}
+}
+function pushBallLog(type,val){
+  G.ballLog.push({type,val});
+  if(G.ballLog.length>6) G.ballLog.shift();
+  for(let i=0;i<6;i++){
+    const p=document.getElementById('pip-'+i);
+    const e=G.ballLog[i];
+    if(!e){p.className='ball-pip';p.textContent='·';continue;}
+    p.className='ball-pip';
+    if(e.type==='out'){p.classList.add('out');p.textContent='W';}
+    else if(e.type==='multiply'){p.classList.add('mult');p.textContent='×';}
+    else if(e.type==='add2'){p.classList.add('bonus');p.textContent='+';}
+    else{p.classList.add('run');p.textContent=e.val;}
+    if(i===G.ballLog.length-1) setTimeout(()=>p.classList.add('new'),10);
+  }
+}
+
+// ── NUMPAD ──
+function buildNumpad(){
+  const pool=MODE_INFO[G.mode].pool;
+  const pad=document.getElementById('numpad');
+  pad.className='numpad '+(pool.length===10?'pool-10':pool.length===4?'pool-4':'pool-6');
+  pad.innerHTML=pool.map(n=>{
+    const key=n===10?'0':String(n);
+    return `<button class="num-btn hotkey-hint" id="nbtn-${n}" data-key="${key}" onclick="selectNum(${n})">${n}</button>`;
+  }).join('');
+}
+function resetDisplayNumbers(){
+  document.getElementById('last-you').textContent='-';
+  document.getElementById('last-cpu').textContent='-';
+  document.getElementById('last-result').textContent='-';
+}
+function selectNum(n){
+  if(G.inputLocked) return;
+  G.inputLocked=true;
+  MODE_INFO[G.mode].pool.forEach(x=>{const b=document.getElementById('nbtn-'+x);if(b) b.classList.toggle('selected',x===n);});
+  setTimeout(()=>processBall(n),300);
+}
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('screen-game').classList.contains('active')) return;
+  if(G.inputLocked) return;
+  const pool=MODE_INFO[G.mode].pool;
+  let n=null;
+  if(e.key==='0'&&pool.includes(10)) n=10;
+  else{const k=parseInt(e.key);if(!isNaN(k)&&pool.includes(k)) n=k;}
+  if(n!==null){e.preventDefault();selectNum(n);}
+});
+
+// ── RULES ──
+function isAdj(a,b){return Math.abs(a-b)===1;}
+function applyRules(mode,bat,bowl,score){
+  switch(mode){
+    case 'NORMAL':case 'B10':case 'TEST':
+      if(bat===bowl) return{s:score,out:true,type:'out'};
+      return{s:score+bat,out:false,type:'add',pts:bat};
+    case 'CRAZY':
+      if(bat===bowl){const p=bat*bat;return{s:score+p,out:false,type:'multiply',pts:p};}
+      if(isAdj(bat,bowl)) return{s:score,out:true,type:'out'};
+      return{s:score+bat,out:false,type:'add',pts:bat};
+    case 'INSANE':
+      if(bat===bowl) return{s:score,out:true,type:'out'};
+      if(isAdj(bat,bowl)){const p=bat*bowl;return{s:score+p,out:false,type:'multiply',pts:p};}
+      return{s:score+bat,out:false,type:'add',pts:bat};
+    case 'MAD':
+      if(bat===bowl){const p=bat+bowl;return{s:score+p,out:false,type:'add2',pts:p};}
+      if(isAdj(bat,bowl)) return{s:score,out:true,type:'out'};
+      {const p=bat*bowl;return{s:score+p,out:false,type:'multiply',pts:p};}
+    case 'NOWAY':
+      if(bat===bowl){const p=bat*bowl;return{s:score+p,out:false,type:'multiply',pts:p};}
+      if(isAdj(bat,bowl)){const p=bat+bowl;return{s:score+p,out:false,type:'add2',pts:p};}
+      return{s:score,out:true,type:'out'};
+  }
+}
+
+// ── BALL PROCESSOR ──
+function processBall(playerNum){
+  const pool=MODE_INFO[G.mode].pool;
+  const cpuNum=cpuPick(pool,G.lastNum);
+  const bat=G.batting?playerNum:cpuNum;
+  const bowl=G.batting?cpuNum:playerNum;
+  const res=applyRules(G.mode,bat,bowl,G.score);
+
+  G.balls++;
+  if(playerNum===G.lastNum) G.repeatCount++; else G.repeatCount=0;
+  G.lastNum=playerNum;
+
+  document.getElementById('last-you').textContent=playerNum;
+  const cpuEl=document.getElementById('last-cpu');
+  cpuEl.textContent=cpuNum; cpuEl.classList.add('reveal');
+  setTimeout(()=>cpuEl.classList.remove('reveal'),300);
+
+  if(G.mode==='B10'){const d=document.getElementById('ball-'+(G.balls-1));if(d) d.classList.add(res.out?'out':'used');}
+
+  pushBallLog(res.out?'out':res.type,res.out?'W':res.pts??bat);
+
+  let tagHtml='',commentary='';
+  if(res.out){
+    tagHtml='<span class="result-tag tag-out">OUT!</span>';
+    commentary=G.batting?rnd(COM.out_b):rnd(COM.out_bw);
+    flashScore('out-flash');
+  } else if(res.type==='multiply'){
+    tagHtml=`<span class="result-tag tag-multiply">×${res.pts}</span>`;
+    commentary=G.mode==='CRAZY'?rnd(COM.crazy):G.mode==='INSANE'?rnd(COM.insane):G.mode==='NOWAY'?rnd(COM.noway_m):'MULTIPLY!';
+    flashScore('multiply-flash'); showHitOverlay('MULTIPLY!',`+${res.pts} RUNS`,'multiply');
+  } else if(res.type==='add2'){
+    tagHtml=`<span class="result-tag tag-add2">+${res.pts}</span>`;
+    commentary=G.mode==='MAD'?rnd(COM.mad):rnd(COM.noway_a);
+    flashScore('flash'); if(res.pts>=15) showHitOverlay('BONUS!',`+${res.pts} RUNS`,'add2');
+  } else {
+    tagHtml=`<span class="result-tag tag-add">+${res.pts}</span>`;
+    commentary=G.repeatCount>=2?rnd(COM.repeat):res.pts>=8?rnd(COM.big):rnd(COM.run);
+    flashScore('flash');
+  }
+
+  document.getElementById('last-result').innerHTML=tagHtml;
+  setCommentary(commentary);
+  G.score=res.s;
+
+  if(G.batting&&G.score>G.highScore){G.highScore=G.score;document.getElementById('stat-highscore').textContent=G.highScore;}
+  if(G.batting&&G.score>G.modeStats[G.mode].pb) G.modeStats[G.mode].pb=G.score;
+
+  updateScoreboardFull(); updateLiveStats();
+
+  if(res.out){
+    showOutOverlay(G.score);
+    setTimeout(()=>{hideOutOverlay();G.inputLocked=false;handleInnEnd();},1800);
+    return;
+  }
+  if(G.chase!==null&&G.score>G.chase){setTimeout(()=>{G.inputLocked=false;handleInnEnd();},400);return;}
+  if(G.mode==='B10'&&G.balls>=10){setTimeout(()=>{G.inputLocked=false;handleInnEnd();},400);return;}
+
+  MODE_INFO[G.mode].pool.forEach(x=>{const b=document.getElementById('nbtn-'+x);if(b) b.classList.remove('selected');});
+  G.selectedNum=null; G.inputLocked=false;
+  if(G.chase!==null){
+    const need=G.chase-G.score+1;
+    document.getElementById('badge-target').textContent=need>0?`NEED: ${need}`:'WINNING!';
+  }
+}
+
+// ── INNING END ──
+function handleInnEnd(){
+  if(G.batting) G.yourInnings.push(G.score);
+  else G.cpuInnings.push(G.score);
+  if(G.mode==='TEST') handleTestInnEnd();
+  else handleStandardInnEnd();
+}
+
+// ── BETWEEN INNINGS CARD ──
+function showInnBreak(ys,cs,target,nextFn){
+  document.getElementById('inn-break-you').textContent=ys;
+  document.getElementById('inn-break-cpu').textContent=cs;
+  if(target!==null){
+    document.getElementById('inn-break-target').innerHTML=
+      `TARGET: <strong>${target+1} RUNS</strong><br><span style="color:var(--chalk-dim);font-size:11px">${G.batting===false?'YOUR TURN TO BAT NEXT':'CPU BATS NEXT'}</span>`;
+  } else {
+    document.getElementById('inn-break-target').textContent='';
+  }
+  G.innBreakCallback=nextFn;
+  show('innbreak');
+}
+function innBreakContinue(){if(G.innBreakCallback) G.innBreakCallback();G.innBreakCallback=null;}
+
+// ── STANDARD MATCH ──
+function handleStandardInnEnd(){
+  const yi=G.yourInnings.length,ci=G.cpuInnings.length;
+  if(yi+ci===1){
+    const firstScore=G.score;
+    const youBatNext=!G.batting;
+    showInnBreak(G.yourInnings[0]??0,G.cpuInnings[0]??0,firstScore,()=>startInning(youBatNext,firstScore));
+    return;
+  }
+  showResult(G.yourInnings[0],G.cpuInnings[0]);
+}
+
+// ── TEST MATCH ──
+function handleTestInnEnd(){
+  const yi=G.yourInnings.length,ci=G.cpuInnings.length;
+  updateInningsTracker();
+  if(G.youBatFirst){
+    if(yi===1&&ci===0){showInnBreak(G.yourInnings[0],0,null,()=>nextTestInn(false,null));return;}
+    if(yi===1&&ci===1){checkTestFollowOn();return;}
+    if(yi===1&&ci===2&&G.followOnEnforced){
+      const ct=G.cpuInnings[0]+G.cpuInnings[1];
+      if(G.yourInnings[0]>ct){showResult(G.yourInnings[0],ct,`WON BY AN INNINGS AND ${G.yourInnings[0]-ct} RUNS`);return;}
+      const tgt=Math.max(0,ct-G.yourInnings[0]);
+      showInnBreak(G.yourInnings[0],ct,tgt,()=>nextTestInn(true,tgt));return;
+    }
+    if(yi===2&&ci===1&&!G.followOnEnforced){
+      const yt=G.yourInnings[0]+G.yourInnings[1];
+      const tgt=Math.max(0,yt-G.cpuInnings[0]);
+      showInnBreak(yt,G.cpuInnings[0],tgt,()=>nextTestInn(false,tgt));return;
+    }
+    if(yi===2&&ci===2){finalTestResult();return;}
+  } else {
+    if(yi===0&&ci===1){showInnBreak(0,G.cpuInnings[0],null,()=>nextTestInn(true,null));return;}
+    if(yi===1&&ci===1){checkTestFollowOn();return;}
+    if(yi===2&&ci===1&&G.followOnEnforced){
+      const yt=G.yourInnings[0]+G.yourInnings[1];
+      if(G.cpuInnings[0]>yt){showResult(yt,G.cpuInnings[0],`LOST BY AN INNINGS AND ${G.cpuInnings[0]-yt} RUNS`);return;}
+      const tgt=Math.max(0,yt-G.cpuInnings[0]);
+      showInnBreak(yt,G.cpuInnings[0],tgt,()=>nextTestInn(false,tgt));return;
+    }
+    if(yi===1&&ci===2&&!G.followOnEnforced){
+      const ct=G.cpuInnings[0]+G.cpuInnings[1];
+      const tgt=Math.max(0,ct-G.yourInnings[0]);
+      showInnBreak(G.yourInnings[0],ct,tgt,()=>nextTestInn(true,tgt));return;
+    }
+    if(yi===2&&ci===2){finalTestResult();return;}
+  }
+  finalTestResult();
+}
+function nextTestInn(youBat,chase){updateInningsTracker();setTimeout(()=>startInning(youBat,chase),200);}
+function finalTestResult(){showResult(G.yourInnings.reduce((a,b)=>a+b,0),G.cpuInnings.reduce((a,b)=>a+b,0));}
+
+// ── FOLLOW-ON ──
+function checkTestFollowOn(){
+  const a1=G.youBatFirst?G.yourInnings[0]:G.cpuInnings[0];
+  const b1=G.youBatFirst?G.cpuInnings[0]:G.yourInnings[0];
+  const deficit=a1-b1;
+  if(deficit>=150){
+    if(G.youBatFirst){
+      document.getElementById('follow-on-text').textContent=`CPU trails by ${deficit} runs (threshold: 150). Enforce the follow-on?`;
+      document.getElementById('follow-on-box').style.display='block';
+    } else {
+      const enforce=Math.random()<0.75;
+      setCommentary(enforce?'CPU enforces the follow-on!':'CPU declines the follow-on.');
+      G.followOnEnforced=enforce;
+      setTimeout(proceedAfterFollowOn,900);
+    }
+  } else {G.followOnEnforced=false;proceedAfterFollowOn();}
+}
+function followOnDecision(enforce){
+  document.getElementById('follow-on-box').style.display='none';
+  G.followOnEnforced=enforce;proceedAfterFollowOn();
+}
+function proceedAfterFollowOn(){
+  if(G.followOnEnforced) nextTestInn(!G.youBatFirst,null);
+  else nextTestInn(G.youBatFirst,null);
+}
+
+// ── INNINGS TRACKER ──
+function updateInningsTracker(){
+  const el=document.getElementById('innings-tracker');
+  if(G.mode!=='TEST'){el.style.display='none';return;}
+  el.style.display='block';
+  const yi=G.yourInnings,ci=G.cpuInnings;
+  const rows=G.youBatFirst
+    ?[{l:'YOUR 1ST',d:yi.length>=1,v:yi[0]},{l:'CPU 1ST',d:ci.length>=1,v:ci[0]},{l:'YOUR 2ND',d:yi.length>=2,v:yi[1]},{l:'CPU 2ND',d:ci.length>=2,v:ci[1]}]
+    :[{l:'CPU 1ST',d:ci.length>=1,v:ci[0]},{l:'YOUR 1ST',d:yi.length>=1,v:yi[0]},{l:'CPU 2ND',d:ci.length>=2,v:ci[1]},{l:'YOUR 2ND',d:yi.length>=2,v:yi[1]}];
+  let aSet=false;
+  el.innerHTML=rows.map(r=>{
+    let cls='';
+    if(r.d) cls='done';
+    else if(!aSet){cls='active';aSet=true;}
+    return `<div class="innings-row ${cls}">${r.l}<span>${r.d?r.v:'—'}</span></div>`;
+  }).join('');
+}
+
+// ── RESULT ──
+function showResult(yourScore,cpuScore,overrideMsg){
+  const heading=document.getElementById('result-heading');
+  const margin=document.getElementById('result-margin');
+  if(yourScore>cpuScore){
+    heading.textContent='YOU WIN!';heading.className='win';
+    margin.textContent=overrideMsg||`BY ${yourScore-cpuScore} RUNS`;
+    G.wins++;G.streak=G.streak>0?G.streak+1:1;G.modeStats[G.mode].wins++;
+  } else if(cpuScore>yourScore){
+    heading.textContent='CPU WINS';heading.className='lose';
+    margin.textContent=overrideMsg||`BY ${cpuScore-yourScore} RUNS`;
+    G.losses++;G.streak=G.streak<0?G.streak-1:-1;G.modeStats[G.mode].losses++;
+  } else {
+    heading.textContent='TIE GAME';heading.className='tie';
+    margin.textContent="IT'S A DRAW — PLAY AGAIN!";
+    G.ties++;G.streak=0;G.modeStats[G.mode].ties++;
+  }
+  document.getElementById('result-you').textContent=yourScore;
+  document.getElementById('result-cpu').textContent=cpuScore;
+  document.getElementById('stat-wins').textContent=G.wins;
+  document.getElementById('stat-losses').textContent=G.losses;
+  document.getElementById('stat-ties').textContent=G.ties;
+  document.getElementById('result-extra').innerHTML=
+    `<span>MODE <strong>${G.mode}</strong></span>
+     <span>DIFFICULTY <strong>${G.difficulty}</strong></span>
+     <span>YOUR PB <strong>${G.modeStats[G.mode].pb}</strong></span>
+     <span>ALL-TIME HIGH <strong>${G.highScore}</strong></span>`;
+  const outcome=yourScore>cpuScore?'WIN':cpuScore>yourScore?'LOSE':'TIE';
+  G.history.unshift({mode:G.mode,diff:G.difficulty,result:outcome,you:yourScore,cpu:cpuScore,margin:Math.abs(yourScore-cpuScore)});
+  if(G.history.length>30) G.history.pop();
+  show('result');
+}
+
+// ── HISTORY ──
+function renderHistory(){
+  const el=document.getElementById('history-list');
+  if(!G.history.length){
+    el.innerHTML=`<div style="padding:20px;text-align:center;font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--chalk-dim)">NO MATCHES YET</div>`;
+    return;
+  }
+  el.innerHTML=G.history.map(h=>`
+    <div class="history-item">
+      <span class="h-mode">${h.mode}</span>
+      <span class="h-diff">${h.diff||'—'}</span>
+      <span class="h-result ${h.result.toLowerCase()}">${h.result}</span>
+      <span class="h-scores">YOU: ${h.you} &nbsp; CPU: ${h.cpu}</span>
+      <span class="h-margin">${h.margin>0?h.margin+' runs':'TIE'}</span>
+    </div>`).join('');
+}
+
+// ── OVERLAYS ──
+function showOutOverlay(score){
+  document.getElementById('out-score').textContent=`SCORED: ${score}`;
+  document.getElementById('out-overlay').classList.add('show');
+}
+function hideOutOverlay(){document.getElementById('out-overlay').classList.remove('show');}
+function showHitOverlay(label,pts,type){
+  const ov=document.getElementById('hit-overlay');
+  const ht=document.getElementById('hit-text');
+  ht.textContent=label;ht.className='hit-text '+type;
+  document.getElementById('hit-pts').textContent=pts;
+  ov.classList.add('show');setTimeout(()=>ov.classList.remove('show'),900);
+}
+
+// mode card accent colours for the grid (always shown on HOME/AFG theme)
+const MODE_ACCENT={
+  NORMAL:'#d4d4d4', CRAZY:'#ffd700', INSANE:'#ff6b00',
+  MAD:'#ffc300', NOWAY:'#cf0a2c', B10:'#ffb612', TEST:'#1a3a5c',
+};
+const MODE_ACCENT_BG={
+  NORMAL:'rgba(212,212,212,0.08)', CRAZY:'rgba(255,215,0,0.08)', INSANE:'rgba(255,107,0,0.08)',
+  MAD:'rgba(255,195,0,0.08)', NOWAY:'rgba(207,10,44,0.08)', B10:'rgba(255,182,18,0.08)', TEST:'rgba(26,58,92,0.08)',
+};
+
+show('luck');
+applyTheme('HOME');
+</script>
+</body>
+</html>
