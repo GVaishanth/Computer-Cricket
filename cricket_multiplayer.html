@@ -1,0 +1,1657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Cricket Multiplayer</title>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a1628;--panel:#0d1e38;--panel2:#102240;--border:#1a3358;
+  --gold:#f5a623;--gold-dim:#8a5c10;--gold-bright:#ffd060;
+  --chalk:#e8e4d4;--dim:#7a8a9a;--red:#e74c3c;--green:#2ecc71;--blue:#3a8ef0;
+  --radius:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--chalk);font-family:'Rajdhani',sans-serif;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse at 20% 0%,rgba(58,142,240,0.07) 0%,transparent 60%),
+             radial-gradient(ellipse at 80% 100%,rgba(245,166,35,0.05) 0%,transparent 60%);}
+.app{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:16px;}
+
+/* ── TYPOGRAPHY ── */
+h1{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:6px;color:var(--gold);line-height:1;}
+h2{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:var(--gold);}
+h3{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--chalk);}
+.mono{font-family:'Share Tech Mono',monospace;}
+
+/* ── SCREENS ── */
+.screen{display:none;} .screen.active{display:block;}
+
+/* ── CARDS ── */
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px;}
+.card-sm{background:var(--panel2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:10px;}
+
+/* ── BUTTONS ── */
+.btn{background:var(--panel2);border:1px solid var(--border);border-radius:var(--radius);color:var(--chalk);font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;letter-spacing:2px;padding:10px 20px;cursor:pointer;transition:all 0.15s;text-transform:uppercase;}
+.btn:hover{border-color:var(--gold);color:var(--gold);}
+.btn.primary{background:var(--gold-dim);border-color:var(--gold);color:var(--gold-bright);}
+.btn.primary:hover{background:#7a4f0a;}
+.btn.danger{border-color:var(--red);color:var(--red);}
+.btn.danger:hover{background:#2a0808;}
+.btn.sm{padding:6px 14px;font-size:12px;}
+.btn:disabled{opacity:0.35;cursor:not-allowed;}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+
+/* ── INPUTS ── */
+input,select,textarea{background:var(--panel2);border:1px solid var(--border);border-radius:var(--radius);color:var(--chalk);font-family:'Rajdhani',sans-serif;font-size:14px;padding:9px 12px;width:100%;transition:border 0.15s;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);}
+select option{background:var(--panel);}
+.field{margin-bottom:12px;}
+.field label{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--dim);display:block;margin-bottom:5px;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* ── HEADER ── */
+.header{text-align:center;padding:28px 0 20px;border-bottom:1px solid var(--border);margin-bottom:24px;}
+.header .sub{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:4px;margin-top:4px;}
+
+/* ── ROOM CODE ── */
+.room-code{font-family:'Bebas Neue',sans-serif;font-size:64px;letter-spacing:12px;color:var(--gold);text-align:center;text-shadow:0 0 30px rgba(245,166,35,0.4);cursor:pointer;}
+.room-code:hover::after{content:' 📋';}
+
+/* ── PLAYER LIST ── */
+.player-list{display:flex;flex-direction:column;gap:6px;}
+.player-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--panel2);border:1px solid var(--border);border-radius:var(--radius);}
+.player-item .pname{flex:1;font-weight:600;}
+.player-item .ptag{font-family:'Share Tech Mono',monospace;font-size:10px;padding:2px 8px;border-radius:3px;border:1px solid;}
+.tag-ready{border-color:var(--green);color:var(--green);}
+.tag-wait{border-color:var(--dim);color:var(--dim);}
+.tag-host{border-color:var(--gold);color:var(--gold);}
+.tag-captain{border-color:#ff9500;color:#ff9500;}
+.tag-team-a{border-color:var(--blue);color:var(--blue);}
+.tag-team-b{border-color:#e03a8c;color:#e03a8c;}
+
+/* ── CHAT ── */
+.chat-wrap{display:flex;flex-direction:column;height:220px;}
+.chat-msgs{flex:1;overflow-y:auto;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.7;}
+.chat-msgs::-webkit-scrollbar{width:4px;} .chat-msgs::-webkit-scrollbar-thumb{background:var(--border);}
+.chat-entry{display:flex;gap:6px;}
+.chat-entry .who{color:var(--gold);min-width:80px;text-align:right;flex-shrink:0;}
+.chat-entry .msg{color:var(--chalk);}
+.chat-entry.system .who{color:var(--dim);}
+.chat-entry.system .msg{color:var(--dim);font-style:italic;}
+.chat-input-row{display:flex;gap:0;}
+.chat-input-row input{border-radius:0 0 0 var(--radius);border-top:none;}
+.chat-input-row button{border-radius:0 0 var(--radius) 0;border-left:none;padding:0 16px;background:var(--gold-dim);border:1px solid var(--gold);color:var(--gold-bright);cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;}
+
+/* ── TICKER ── */
+.ticker-wrap{overflow:hidden;background:var(--panel2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 16px;margin-bottom:12px;}
+.ticker-inner{white-space:nowrap;font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--gold);animation:ticker 30s linear infinite;}
+.ticker-inner:hover{animation-play-state:paused;}
+@keyframes ticker{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+
+/* ── STATS TABLE ── */
+.stats-table{width:100%;border-collapse:collapse;font-family:'Share Tech Mono',monospace;font-size:12px;}
+.stats-table th{color:var(--dim);letter-spacing:2px;font-size:10px;padding:6px 10px;border-bottom:1px solid var(--border);text-align:left;}
+.stats-table td{padding:6px 10px;border-bottom:1px solid var(--border);}
+.stats-table tr:last-child td{border-bottom:none;}
+.stats-table .rank{color:var(--gold);}
+.stats-table .highlight{color:var(--gold-bright);font-weight:700;}
+
+/* ── SCOREBOARD ── */
+.scoreboard{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-bottom:14px;}
+.score-side{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;}
+.score-side .sname{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:2px;margin-bottom:4px;}
+.score-side .sval{font-family:'Share Tech Mono',monospace;font-size:48px;color:var(--gold);line-height:1;}
+.score-side .swickets{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--dim);margin-top:2px;}
+.vs{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--dim);text-align:center;}
+
+/* ── NUMPAD ── */
+.numpad{display:grid;gap:8px;justify-content:center;margin:12px 0;}
+.numpad.p10{grid-template-columns:repeat(5,60px);}
+.numpad.p6{grid-template-columns:repeat(6,60px);}
+.numpad.p4{grid-template-columns:repeat(4,60px);}
+.nmbtn{height:56px;background:var(--panel2);border:1px solid var(--border);border-radius:var(--radius);color:var(--chalk);font-family:'Share Tech Mono',monospace;font-size:20px;cursor:pointer;transition:all 0.1s;}
+.nmbtn:hover{border-color:var(--gold);color:var(--gold);}
+.nmbtn.locked{background:var(--gold-dim);border-color:var(--gold);color:var(--gold-bright);}
+.nmbtn:disabled{opacity:0.3;cursor:not-allowed;}
+
+/* ── TIMER ── */
+.timer-ring{width:80px;height:80px;margin:0 auto 10px;}
+.timer-ring circle{fill:none;stroke-width:6;}
+.timer-ring .bg{stroke:var(--border);}
+.timer-ring .fg{stroke:var(--gold);stroke-linecap:round;transform:rotate(-90deg);transform-origin:50% 50%;transition:stroke-dashoffset 0.2s linear;}
+
+/* ── LOCKED DISPLAY ── */
+.lock-row{display:flex;gap:12px;justify-content:center;margin:10px 0;}
+.lock-box{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);width:90px;text-align:center;padding:10px;}
+.lock-box .lbl{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:4px;}
+.lock-box .val{font-family:'Share Tech Mono',monospace;font-size:36px;color:var(--chalk);}
+.lock-box.revealed{border-color:var(--gold);}
+.lock-box.locked-in{border-color:var(--green);}
+.lock-box .val.pending{color:var(--border);}
+
+/* ── BALL LOG ── */
+.ball-log{display:flex;gap:5px;justify-content:center;margin:8px 0;}
+.bpip{width:28px;height:28px;border-radius:50%;background:var(--panel2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--dim);}
+.bpip.run{background:#0a2a0a;border-color:var(--green);color:var(--green);}
+.bpip.out{background:#2a0808;border-color:var(--red);color:var(--red);font-size:9px;}
+.bpip.mult{background:#0a0a2a;border-color:var(--blue);color:var(--blue);}
+
+/* ── REACTIONS ── */
+.react-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0;}
+.react-btn{background:var(--panel2);border:1px solid var(--border);border-radius:20px;padding:6px 14px;cursor:pointer;font-size:13px;font-family:'Rajdhani',sans-serif;font-weight:600;transition:all 0.15s;}
+.react-btn:hover{border-color:var(--gold);transform:scale(1.1);}
+.react-pop{position:fixed;font-size:28px;pointer-events:none;animation:reactFloat 1.5s ease-out forwards;z-index:999;}
+@keyframes reactFloat{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-80px) scale(1.4)}}
+
+/* ── COMMENTARY ── */
+.commentary{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--chalk);min-height:40px;margin-bottom:10px;}
+.comm-label{color:var(--dim);font-size:10px;letter-spacing:2px;margin-bottom:3px;}
+
+/* ── OVER CARD ── */
+.over-card{background:var(--panel2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-family:'Share Tech Mono',monospace;font-size:11px;margin-bottom:8px;}
+.over-card .ot{color:var(--dim);margin-bottom:4px;}
+.over-card .ob{display:flex;gap:4px;}
+
+/* ── BOWLING FIGURES ── */
+.bowl-fig{display:flex;gap:8px;align-items:center;font-family:'Share Tech Mono',monospace;font-size:11px;padding:5px 10px;background:var(--panel2);border:1px solid var(--border);border-radius:var(--radius);}
+.bowl-fig .bf-name{color:var(--gold);min-width:80px;}
+.bowl-fig .bf-stat{color:var(--chalk-dim);}
+
+/* ── TABS ── */
+.tabs{display:flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:14px;}
+.tab{flex:1;padding:9px;text-align:center;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--dim);background:var(--panel2);border:none;transition:all 0.15s;}
+.tab.active{background:var(--panel);color:var(--gold);}
+.tab-content{display:none;} .tab-content.active{display:block;}
+
+/* ── LAYOUT GRID ── */
+.lobby-grid{display:grid;grid-template-columns:1fr 300px;gap:14px;}
+.match-grid{display:grid;grid-template-columns:1fr 260px;gap:14px;}
+@media(max-width:640px){.lobby-grid,.match-grid,.field-row{grid-template-columns:1fr;}}
+
+/* ── SECTION TITLE ── */
+.stitle{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--dim);margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:5px;}
+
+/* ── BADGES ── */
+.badge{display:inline-block;font-family:'Share Tech Mono',monospace;font-size:10px;padding:2px 8px;border-radius:3px;border:1px solid;margin:2px;}
+
+/* ── MATCH PHASE BANNER ── */
+.phase-banner{text-align:center;padding:10px;background:var(--panel2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;}
+.phase-banner .ph-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--gold);}
+.phase-banner .ph-sub{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--dim);}
+
+/* ── TOURNAMENT BRACKET ── */
+.bracket-list{display:flex;flex-direction:column;gap:6px;}
+.bracket-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--panel2);border:1px solid var(--border);border-radius:var(--radius);font-family:'Share Tech Mono',monospace;font-size:12px;}
+.bracket-item.done{border-color:var(--green);opacity:0.7;}
+.bracket-item.current{border-color:var(--gold);background:rgba(245,166,35,0.05);}
+.bracket-item.pending{opacity:0.5;}
+.bi-teams{flex:1;}
+.bi-result{color:var(--gold);}
+.bi-status{font-size:10px;padding:2px 6px;border-radius:3px;}
+.bst-done{background:#0a2a0a;color:var(--green);}
+.bst-live{background:rgba(245,166,35,0.1);color:var(--gold);}
+.bst-pend{color:var(--dim);}
+
+/* ── TEAM DRAFT ── */
+.draft-pool{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;}
+.draft-player{padding:8px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-weight:600;transition:all 0.15s;}
+.draft-player:hover{border-color:var(--gold);}
+.draft-player.picked{opacity:0.35;cursor:default;}
+.draft-player.team-a{border-color:var(--blue);color:var(--blue);}
+.draft-player.team-b{border-color:#e03a8c;color:#e03a8c;}
+
+/* ── RESULT SCREEN ── */
+.result-big{text-align:center;padding:30px 20px;}
+.result-big h2{font-size:56px;margin-bottom:8px;}
+.result-big.win h2{color:var(--green);}
+.result-big.lose h2{color:var(--red);}
+.result-big.draw h2{color:var(--gold);}
+
+/* ── NOTIFICATIONS ── */
+#notif{position:fixed;top:16px;right:16px;z-index:1000;display:flex;flex-direction:column;gap:8px;}
+.notif-item{background:var(--panel);border:1px solid var(--gold);border-radius:var(--radius);padding:10px 16px;font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--gold);animation:notifIn 0.3s ease-out;max-width:280px;}
+@keyframes notifIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+
+/* ── SPECTATOR BADGE ── */
+.spec-badge{text-align:center;margin:6px 0;}
+.spec-badge span{display:inline-block;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--dim);border:1px solid var(--border);border-radius:3px;padding:3px 12px;}
+</style>
+</head>
+<body>
+<div id="notif"></div>
+
+<div class="app">
+<div class="header">
+  <h1>CRICKET MULTIPLAYER</h1>
+  <div class="sub">HAND CRICKET · REAL-TIME · TOURNAMENT MODE</div>
+</div>
+
+<!-- ── LANDING ── -->
+<div id="s-land" class="screen active">
+  <div style="max-width:480px;margin:0 auto;">
+    <div class="card" style="text-align:center;padding:32px;">
+      <h2 style="margin-bottom:6px">WELCOME</h2>
+      <p class="mono" style="font-size:12px;color:var(--dim);margin-bottom:24px">CREATE A ROOM OR JOIN WITH A CODE</p>
+      <div class="field">
+        <label>YOUR NAME</label>
+        <input id="inp-name" maxlength="16" placeholder="Enter your name">
+      </div>
+      <div class="btn-row" style="justify-content:center">
+        <button class="btn primary" onclick="goCreate()">CREATE ROOM</button>
+        <button class="btn" onclick="goJoin()">JOIN ROOM</button>
+      </div>
+    </div>
+    <div class="card" id="join-panel" style="display:none">
+      <div class="stitle">JOIN A ROOM</div>
+      <div class="field">
+        <label>ROOM CODE</label>
+        <input id="inp-code" maxlength="8" placeholder="e.g. ABC123" style="text-transform:uppercase;letter-spacing:4px;font-size:18px;">
+      </div>
+      <div class="btn-row">
+        <button class="btn primary" onclick="joinRoom()">JOIN</button>
+        <button class="btn" onclick="document.getElementById('join-panel').style.display='none'">CANCEL</button>
+      </div>
+      <div id="join-status" class="mono" style="font-size:12px;color:var(--dim);"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CREATE ── -->
+<div id="s-create" class="screen">
+  <div style="max-width:600px;margin:0 auto;">
+    <div class="card">
+      <h2 style="margin-bottom:16px">CREATE ROOM</h2>
+      <div class="field-row">
+        <div class="field"><label>ROOM SIZE (2-12)</label><input id="cfg-size" type="number" min="2" max="12" value="4"></div>
+        <div class="field"><label>WICKETS PER INNINGS</label><input id="cfg-wickets" type="number" min="1" max="10" value="3"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>BALLS PER INNINGS (0=unlimited)</label><input id="cfg-balls" type="number" min="0" max="120" value="30"></div>
+        <div class="field"><label>MATCH TYPE</label>
+          <select id="cfg-type">
+            <option value="solo">Solo (1v1)</option>
+            <option value="team">Team (2 teams)</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>GAMEPLAY MODE</label>
+          <select id="cfg-modetype">
+            <option value="single">Single (pick one mode)</option>
+            <option value="double">Double (2 modes, random each match)</option>
+            <option value="random">Random (any mode each match)</option>
+          </select>
+        </div>
+        <div class="field" id="mode-pick-wrap"><label>GAME MODE</label>
+          <select id="cfg-mode">
+            <option value="NORMAL">NORMAL</option>
+            <option value="CRAZY">CRAZY</option>
+            <option value="INSANE">INSANE</option>
+            <option value="MAD">MAD</option>
+            <option value="NOWAY">NOWAY</option>
+            <option value="B10">B10</option>
+            <option value="TEST">TEST</option>
+          </select>
+        </div>
+      </div>
+      <div class="field" id="mode-pick2-wrap" style="display:none"><label>SECOND GAME MODE</label>
+        <select id="cfg-mode2">
+          <option value="CRAZY">CRAZY</option>
+          <option value="NORMAL">NORMAL</option>
+          <option value="INSANE">INSANE</option>
+          <option value="MAD">MAD</option>
+          <option value="NOWAY">NOWAY</option>
+          <option value="B10">B10</option>
+          <option value="TEST">TEST</option>
+        </select>
+      </div>
+      <div class="btn-row">
+        <button class="btn primary" onclick="createRoom()">CREATE ROOM</button>
+        <button class="btn" onclick="showScreen('s-land')">BACK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOBBY ── -->
+<div id="s-lobby" class="screen">
+  <!-- ticker -->
+  <div class="ticker-wrap"><div class="ticker-inner" id="ticker-text">WAITING FOR PLAYERS...</div></div>
+
+  <div class="lobby-grid">
+    <!-- left: player list + tournament bracket -->
+    <div>
+      <!-- room code card -->
+      <div class="card" id="room-code-card" style="text-align:center;padding:16px 20px;">
+        <div class="stitle">ROOM CODE — SHARE WITH FRIENDS</div>
+        <div class="room-code" id="lobby-code" title="Click to copy" onclick="copyCode()">------</div>
+        <div class="mono" style="font-size:11px;color:var(--dim);margin-top:4px">CLICK TO COPY</div>
+      </div>
+
+      <!-- settings summary -->
+      <div class="card-sm" id="settings-summary"></div>
+
+      <!-- players -->
+      <div class="card">
+        <div class="stitle">PLAYERS</div>
+        <div class="player-list" id="player-list"></div>
+        <div style="margin-top:12px" id="host-start-wrap">
+          <button class="btn primary" onclick="hostStartGame()" id="btn-start" disabled>START TOURNAMENT</button>
+          <div class="mono" style="font-size:11px;color:var(--dim);margin-top:6px" id="start-hint"></div>
+        </div>
+        <div style="margin-top:8px">
+          <button class="btn sm" id="btn-ready" onclick="toggleReady()">READY UP</button>
+        </div>
+      </div>
+
+      <!-- tournament bracket -->
+      <div class="card" id="bracket-card" style="display:none">
+        <div class="stitle">TOURNAMENT SCHEDULE</div>
+        <div class="bracket-list" id="bracket-list"></div>
+      </div>
+    </div>
+
+    <!-- right: chat + stats -->
+    <div>
+      <div class="tabs">
+        <button class="tab active" onclick="lobbyTab('chat',event)">CHAT</button>
+        <button class="tab" onclick="lobbyTab('stats',event)">STATS</button>
+        <button class="tab" onclick="lobbyTab('teamchat',event)" id="teamchat-tab" style="display:none">TEAM</button>
+      </div>
+      <div id="ltab-chat" class="tab-content active">
+        <div class="chat-wrap">
+          <div class="chat-msgs" id="lobby-chat-msgs"></div>
+          <div class="chat-input-row">
+            <input id="lobby-chat-in" placeholder="Say something..." onkeydown="if(e.key==='Enter'||event.key==='Enter')sendLobbyChat()">
+            <button onclick="sendLobbyChat()">SEND</button>
+          </div>
+        </div>
+      </div>
+      <div id="ltab-stats" class="tab-content">
+        <div class="stitle">LEADERBOARD</div>
+        <table class="stats-table" id="stats-table">
+          <thead><tr><th>#</th><th>PLAYER</th><th>RUNS</th><th>WKTS</th><th>W</th><th>L</th></tr></thead>
+          <tbody id="stats-tbody"></tbody>
+        </table>
+      </div>
+      <div id="ltab-teamchat" class="tab-content">
+        <div class="chat-wrap">
+          <div class="chat-msgs" id="team-chat-msgs"></div>
+          <div class="chat-input-row">
+            <input id="team-chat-in" placeholder="Team chat..." onkeydown="if(event.key==='Enter')sendTeamChat()">
+            <button onclick="sendTeamChat()">SEND</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TEAM DRAFT ── -->
+<div id="s-draft" class="screen">
+  <div style="max-width:640px;margin:0 auto;">
+    <div class="card">
+      <h2 style="margin-bottom:4px">TEAM DRAFT</h2>
+      <div class="mono" style="font-size:11px;color:var(--dim);margin-bottom:16px" id="draft-info">Captains are picking their teams...</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+        <div>
+          <div class="stitle" style="color:var(--blue)">TEAM A</div>
+          <div id="team-a-list" class="player-list"></div>
+        </div>
+        <div>
+          <div class="stitle" style="color:#e03a8c">TEAM B</div>
+          <div id="team-b-list" class="player-list"></div>
+        </div>
+      </div>
+
+      <div id="draft-pool-wrap">
+        <div class="stitle">AVAILABLE PLAYERS</div>
+        <div class="draft-pool" id="draft-pool"></div>
+      </div>
+
+      <div id="draft-waiting" style="display:none;text-align:center;padding:20px">
+        <div class="mono" style="color:var(--dim);font-size:12px">Waiting for captain to pick...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MATCH ── -->
+<div id="s-match" class="screen">
+  <div class="match-grid">
+    <!-- main match area -->
+    <div>
+      <!-- phase banner -->
+      <div class="phase-banner" id="match-phase-banner">
+        <div class="ph-title" id="mph-title">MATCH</div>
+        <div class="ph-sub" id="mph-sub"></div>
+      </div>
+
+      <!-- scoreboard -->
+      <div class="scoreboard">
+        <div class="score-side">
+          <div class="sname" id="score-name-bat">BATTING</div>
+          <div class="sval" id="score-bat">0</div>
+          <div class="swickets" id="score-bat-wkts"></div>
+        </div>
+        <div class="vs">VS</div>
+        <div class="score-side">
+          <div class="sname" id="score-name-bowl">BOWLING</div>
+          <div class="sval" id="score-bowl">0</div>
+          <div class="swickets" id="score-bowl-info"></div>
+        </div>
+      </div>
+
+      <!-- over info -->
+      <div class="card-sm" id="over-info" style="text-align:center;font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--dim)">
+        OVER 1 · BALL 1
+      </div>
+
+      <!-- ball log -->
+      <div class="ball-log" id="match-ball-log">
+        <div class="bpip">·</div><div class="bpip">·</div><div class="bpip">·</div>
+        <div class="bpip">·</div><div class="bpip">·</div><div class="bpip">·</div>
+      </div>
+
+      <!-- timer -->
+      <div id="timer-wrap" style="text-align:center;margin:10px 0">
+        <svg class="timer-ring" viewBox="0 0 80 80">
+          <circle class="bg" cx="40" cy="40" r="34"/>
+          <circle class="fg" id="timer-circle" cx="40" cy="40" r="34" stroke-dasharray="213.6" stroke-dashoffset="0"/>
+        </svg>
+        <div class="mono" style="font-size:24px;color:var(--gold);margin-top:-50px;padding-top:28px" id="timer-num">3</div>
+      </div>
+
+      <!-- locked numbers display -->
+      <div class="lock-row" id="lock-row">
+        <div class="lock-box" id="lock-p1">
+          <div class="lbl" id="lock-p1-name">P1</div>
+          <div class="val pending" id="lock-p1-val">?</div>
+        </div>
+        <div class="lock-box" id="lock-p2">
+          <div class="lbl" id="lock-p2-name">P2</div>
+          <div class="val pending" id="lock-p2-val">?</div>
+        </div>
+      </div>
+
+      <!-- numpad (players only) -->
+      <div id="numpad-wrap">
+        <div class="mono" style="font-size:11px;color:var(--dim);text-align:center;margin-bottom:6px" id="numpad-prompt">ENTER YOUR NUMBER</div>
+        <div class="numpad p10" id="match-numpad"></div>
+        <div class="mono" style="font-size:10px;color:var(--dim);text-align:center;margin-top:4px">KEYBOARD 1–9 · 0=10</div>
+      </div>
+
+      <!-- spectator panel -->
+      <div id="spectator-panel" style="display:none">
+        <div class="spec-badge"><span>👁 SPECTATING</span></div>
+        <div class="react-row" id="react-row">
+          <button class="react-btn" onclick="sendReact('🎉 YAY!!')">🎉 YAY!!</button>
+          <button class="react-btn" onclick="sendReact('👎 BOO!!')">👎 BOO!!</button>
+          <button class="react-btn" onclick="sendReact('😮 NOOO!!')">😮 NOOO!!</button>
+          <button class="react-btn" onclick="sendReact('🏏 HOWZAT!')">🏏 HOWZAT!</button>
+          <button class="react-btn" onclick="sendReact('6️⃣ SIX!')">6️⃣ SIX!</button>
+          <button class="react-btn" onclick="sendReact('🔥 ON FIRE!')">🔥 ON FIRE!</button>
+          <button class="react-btn" onclick="sendReact('🦆 DUCK!')">🦆 DUCK!</button>
+        </div>
+      </div>
+
+      <!-- commentary -->
+      <div class="commentary">
+        <div class="comm-label">COMMENTARY</div>
+        <span id="match-comm">Waiting for first ball...</span>
+      </div>
+
+      <!-- captain bowler pick (team match) -->
+      <div id="bowler-pick-wrap" style="display:none" class="card-sm">
+        <div class="stitle">CAPTAIN: SELECT BOWLER</div>
+        <div id="bowler-pick-list" class="player-list"></div>
+      </div>
+    </div>
+
+    <!-- right sidebar -->
+    <div>
+      <!-- match chat -->
+      <div class="card">
+        <div class="stitle">MATCH CHAT</div>
+        <div class="chat-wrap" style="height:180px">
+          <div class="chat-msgs" id="match-chat-msgs"></div>
+          <div class="chat-input-row">
+            <input id="match-chat-in" placeholder="Chat..." onkeydown="if(event.key==='Enter')sendMatchChat()">
+            <button onclick="sendMatchChat()">→</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- bowling figures -->
+      <div class="card">
+        <div class="stitle">BOWLING FIGURES</div>
+        <div id="bowl-figs"></div>
+      </div>
+
+      <!-- over history -->
+      <div class="card">
+        <div class="stitle">OVER HISTORY</div>
+        <div id="over-history" style="max-height:200px;overflow-y:auto;"></div>
+      </div>
+
+      <!-- back to lobby -->
+      <div style="margin-top:8px">
+        <button class="btn sm" onclick="backToLobby()">← LOBBY</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MATCH RESULT ── -->
+<div id="s-mresult" class="screen">
+  <div style="max-width:500px;margin:0 auto;">
+    <div class="card">
+      <div class="result-big" id="mresult-content"></div>
+      <div class="btn-row" style="justify-content:center">
+        <button class="btn primary" onclick="showScreen('s-lobby')">BACK TO LOBBY</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOURNAMENT END ── -->
+<div id="s-tend" class="screen">
+  <div style="max-width:600px;margin:0 auto;">
+    <div class="card" style="text-align:center;padding:32px">
+      <h2 style="margin-bottom:16px">TOURNAMENT OVER</h2>
+      <div id="tend-content"></div>
+      <div class="btn-row" style="justify-content:center;margin-top:20px">
+        <button class="btn primary" onclick="location.reload()">NEW TOURNAMENT</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- .app -->
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  CONSTANTS
+// ═══════════════════════════════════════════════════════
+const MODES=['NORMAL','CRAZY','INSANE','MAD','NOWAY','B10','TEST'];
+const MODE_POOL={NORMAL:[1,2,3,4,5,6,7,8,9,10],CRAZY:[1,2,3,4,5,6,7,8,9,10],
+  INSANE:[1,2,3,4,5,6,7,8,9,10],MAD:[1,2,3,4,5,6,7,8,9,10],
+  NOWAY:[1,2,3,4,5,6,7,8,9,10],B10:[7,8,9,10],TEST:[1,2,3,4,5,6]};
+const COM_RUN=['Good timing!','Clean hit!','Finds the gap!','Running hard!','Safe!','Through the covers!'];
+const COM_BIG=['HUGE!','What a strike!','Thunderous drive!','Maximum power!'];
+const COM_OUT=["OUT! Caught behind!","Stumped!","Bowled 'em!","Plumb LBW!","Gone!"];
+const COM_MULT=['SAME — MEGA SQUARED!','Score goes BERSERK!','MULTIPLY!'];
+const LOCK_SEC=3;
+
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+let peer=null, conns={}, hostConn=null;
+let myId='', myName='', isHost=false, myRole='spectator';
+// myRole: 'player'|'spectator'|'captain-a'|'captain-b'
+
+let R={ // full room state (host is source of truth)
+  roomCode:'', settings:{size:4,wickets:3,balls:30,type:'solo',modeType:'single',mode:'NORMAL',mode2:'CRAZY'},
+  players:[], // [{id,name,team,ready,isHost}]
+  teams:{A:{captain:'',players:[]},B:{captain:'',players:[]}},
+  schedule:[], // [{id,p1,p2,done,winner,scores}]
+  currentMatchId:null,
+  match:null, // see newMatchState()
+  chat:[], teamChatA:[], teamChatB:[],
+  stats:{}, // {id:{runs,wickets,matches,wins,losses}}
+  phase:'lobby', // lobby|draft|match|tend
+  ticker:'WAITING FOR PLAYERS...',
+};
+
+// ═══════════════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════════════
+function rnd(a){return a[Math.floor(Math.random()*a.length)];}
+function randId(n){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<n;i++)s+=c[Math.floor(Math.random()*c.length)];return s;}
+function isAdj(a,b){return Math.abs(a-b)===1;}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function notify(msg,dur=3000){const d=document.getElementById('notif');const el=document.createElement('div');el.className='notif-item';el.textContent=msg;d.appendChild(el);setTimeout(()=>el.remove(),dur);}
+function copyCode(){navigator.clipboard&&navigator.clipboard.writeText(R.roomCode);notify('Room code copied!');}
+function myPlayer(){return R.players.find(p=>p.id===myId);}
+function playerName(id){const p=R.players.find(p=>p.id===id);return p?p.name:id;}
+
+// ═══════════════════════════════════════════════════════
+//  PEER SETUP
+// ═══════════════════════════════════════════════════════
+function initPeer(id){
+  return new Promise((res,rej)=>{
+    peer=new Peer(id,{debug:0});
+    peer.on('open',()=>res());
+    peer.on('error',e=>{
+      if(e.type==='unavailable-id') rej('ID taken');
+      else rej(e.message||'Connection error');
+    });
+    peer.on('connection',conn=>setupConn(conn));
+    setTimeout(()=>rej('Timeout'),8000);
+  });
+}
+
+function setupConn(conn){
+  conn.on('open',()=>{
+    conns[conn.peer]=conn;
+    conn.on('data',d=>onData(conn.peer,d));
+    conn.on('close',()=>onDisconnect(conn.peer));
+  });
+}
+
+function broadcast(msg,excludeId=null){
+  Object.entries(conns).forEach(([id,c])=>{if(id!==excludeId) c.send(msg);});
+}
+function sendToHost(msg){if(hostConn) hostConn.send(msg);else if(isHost) onData(myId,msg);}
+function sendToClient(id,msg){if(id===myId){onData(myId,msg);}else if(conns[id]){conns[id].send(msg);}}
+
+// ═══════════════════════════════════════════════════════
+//  HOST: MESSAGE HANDLER
+// ═══════════════════════════════════════════════════════
+function onData(fromId,msg){
+  if(!isHost&&msg.type!=='state_update'&&msg.type!=='your_role'&&msg.type!=='react'&&msg.type!=='match_comm') return guestHandle(fromId,msg);
+  if(!isHost) return;
+
+  switch(msg.type){
+    case 'join': hostHandleJoin(fromId,msg); break;
+    case 'ready': hostHandleReady(fromId); break;
+    case 'chat': hostHandleChat(fromId,msg.text); break;
+    case 'team_chat': hostHandleTeamChat(fromId,msg.text); break;
+    case 'pick': hostHandlePick(fromId,msg.num); break;
+    case 'react': hostHandleReact(fromId,msg.emoji); break;
+    case 'captain_pick': hostHandleCaptainPick(fromId,msg.playerId); break;
+    case 'bowler_pick': hostHandleBowlerPick(fromId,msg.playerId); break;
+  }
+}
+
+function guestHandle(fromId,msg){
+  switch(msg.type){
+    case 'state_update': applyState(msg.state); break;
+    case 'your_role': myRole=msg.role; break;
+    case 'react': showReactPop(msg.emoji,msg.from); break;
+    case 'match_comm': document.getElementById('match-comm').textContent=msg.text; break;
+  }
+}
+
+function onDisconnect(id){
+  if(!isHost) return;
+  R.players=R.players.filter(p=>p.id!==id);
+  delete conns[id];
+  sysChat(`${playerName(id)} disconnected`);
+  pushState();
+}
+
+// ═══════════════════════════════════════════════════════
+//  HOST HANDLERS
+// ═══════════════════════════════════════════════════════
+function hostHandleJoin(id,msg){
+  if(R.players.length>=R.settings.size){sendToClient(id,{type:'error',msg:'Room full'});return;}
+  const name=msg.name.slice(0,16)||'Player';
+  R.players.push({id,name,team:'',ready:false,isHost:false});
+  R.stats[id]={runs:0,wickets:0,matches:0,wins:0,losses:0};
+  sysChat(`${name} joined`);
+  sendToClient(id,{type:'your_role',role:'spectator'});
+  pushState();
+}
+
+function hostHandleReady(id){
+  const p=R.players.find(p=>p.id===id);
+  if(p) p.ready=!p.ready;
+  pushState();
+}
+
+function hostHandleChat(id,text){
+  if(!text||!text.trim()) return;
+  R.chat.push({from:playerName(id),text:text.trim().slice(0,200),ts:Date.now()});
+  if(R.chat.length>100) R.chat.shift();
+  pushState();
+}
+
+function hostHandleTeamChat(id,text){
+  if(!text||!text.trim()) return;
+  const p=R.players.find(pl=>pl.id===id);
+  if(!p) return;
+  const arr=p.team==='A'?R.teamChatA:R.teamChatB;
+  arr.push({from:p.name,text:text.trim().slice(0,200),ts:Date.now()});
+  if(arr.length>100) arr.shift();
+  pushState();
+}
+
+function hostHandleReact(id,emoji){
+  const from=playerName(id);
+  broadcast({type:'react',emoji,from});
+  onData(myId,{type:'react',emoji,from});// also show on host
+}
+
+function hostHandleCaptainPick(id,playerId){
+  const m=R.match;
+  if(!m||m.phase!=='draft') return;
+  const capA=R.teams.A.captain, capB=R.teams.B.captain;
+  if(id!==capA&&id!==capB) return;
+  const team=id===capA?'A':'B';
+  const other=team==='A'?'B':'A';
+  // only pick if it's this captain's turn
+  if(m.draftTurn!==team) return;
+  const pl=R.players.find(p=>p.id===playerId&&!p.team);
+  if(!pl) return;
+  pl.team=team;
+  R.teams[team].players.push(playerId);
+  m.draftTurn=other;
+  // check if all picked
+  const unpicked=R.players.filter(p=>!p.team&&p.id!==capA&&p.id!==capB);
+  if(unpicked.length===0){
+    m.phase='coin';
+    hostStartMatch();
+  }
+  pushState();
+}
+
+function hostHandleBowlerPick(id,playerId){
+  const m=R.match;
+  if(!m||m.phase!=='bowler_pick') return;
+  // id must be the fielding captain
+  if(id!==m.fieldingCaptain) return;
+  const valid=m.fieldingTeamPlayers.includes(playerId);
+  if(!valid) return;
+  const fig=m.bowlerFigs[playerId]||{overs:0,runs:0,wickets:0};
+  const maxOv=m.maxBowlerOvers;
+  if(maxOv>0&&fig.overs>=maxOv){sysChat('That bowler has reached their over limit!');return;}
+  m.currentBowler=playerId;
+  m.phase='playing';
+  pushState();
+  hostStartBallTimer();
+}
+
+// ═══════════════════════════════════════════════════════
+//  MATCH ENGINE
+// ═══════════════════════════════════════════════════════
+function newMatchState(p1id,p2id,mode){
+  const pool=MODE_POOL[mode]||MODE_POOL.NORMAL;
+  return {
+    p1:p1id,p2:p2id,mode,pool,
+    phase:'coin', // coin|playing|innings_break|bowler_pick|result
+    innings:1,
+    batting:p1id, bowling:p2id,
+    scores:{[p1id]:0,[p2id]:0},
+    innScores:{[p1id]:[],[p2id]:[]}, // per innings
+    wickets:{[p1id]:0,[p2id]:0},
+    balls:0, over:0, ballInOver:0,
+    locked:{[p1id]:null,[p2id]:null},
+    timerStart:null,
+    ballLog:[], overHistory:[],
+    currentOver:[],
+    bowlerFigs:{}, currentBowler:p2id,
+    fieldingCaptain:null, fieldingTeamPlayers:[],
+    maxBowlerOvers:0,
+    draftTurn:'A',
+    target:null,
+    chase:false,
+    result:null,
+  };
+}
+
+function hostStartMatch(){
+  const m=R.match;
+  m.phase='playing';
+  // for team match set fielding captain
+  if(R.settings.type==='team'){
+    const fielding=m.bowling;
+    const fieldingTeam=R.players.find(p=>p.id===fielding)?.team;
+    m.fieldingCaptain=R.teams[fieldingTeam]?.captain;
+    m.fieldingTeamPlayers=R.teams[fieldingTeam]?.players||[];
+    const totalBalls=R.settings.balls;
+    const bowlers=m.fieldingTeamPlayers.length||1;
+    m.maxBowlerOvers=totalBalls>0?Math.ceil(totalBalls/6/bowlers*2):0;
+    m.phase='bowler_pick';
+  }
+  pushState();
+  if(R.settings.type!=='team') hostStartBallTimer();
+}
+
+function hostStartBallTimer(){
+  const m=R.match;
+  m.locked={[m.p1]:null,[m.p2]:null};
+  m.timerStart=Date.now();
+  pushState();
+  setTimeout(()=>hostResolveBall(),LOCK_SEC*1000+200);
+}
+
+function hostHandlePick(id,num){
+  const m=R.match;
+  if(!m||m.phase!=='playing') return;
+  if(id!==m.p1&&id!==m.p2) return;
+  if(m.locked[id]!==null) return;
+  const pool=m.pool;
+  if(!pool.includes(num)) return;
+  m.locked[id]=num;
+  pushState();
+}
+
+function hostResolveBall(){
+  const m=R.match;
+  if(!m||m.phase!=='playing') return;
+  // auto-pick for any who didn't lock
+  [m.p1,m.p2].forEach(id=>{
+    if(m.locked[id]===null) m.locked[id]=rnd(m.pool);
+  });
+  pushState();
+
+  setTimeout(()=>{
+    const bat=m.batting, bowl=m.bowling;
+    const batNum=m.locked[bat], bowlNum=m.locked[bowl];
+    const res=applyRules(m.mode,batNum,bowlNum,m.scores[bat]);
+    m.scores[bat]=res.s;
+    m.balls++;
+    m.ballInOver++;
+
+    // ball log
+    const pip={type:res.out?'out':res.type,val:res.out?'W':res.pts||batNum};
+    m.ballLog.push(pip);
+    if(m.ballLog.length>6) m.ballLog.shift();
+    m.currentOver.push(pip);
+
+    // bowling figures
+    if(!m.bowlerFigs[bowl]) m.bowlerFigs[bowl]={overs:0,runs:0,wickets:0};
+    const bf=m.bowlerFigs[bowl];
+    bf.runs+=res.s-( m.scores[bat]-res.s + m.scores[bat] - res.s);
+    // simpler: just track runs conceded
+    bf.runs=bf.runs|0;
+    if(!res.out) bf.runs+=(res.pts||batNum);
+    if(res.out) bf.wickets++;
+
+    // commentary
+    const comm=buildComm(m.mode,batNum,bowlNum,res);
+    broadcast({type:'match_comm',text:comm});
+    if(isHost) document.getElementById('match-comm').textContent=comm;
+
+    if(res.out){
+      m.wickets[bat]++;
+      if(m.wickets[bat]>=R.settings.wickets){
+        endInnings(m);
+        return;
+      }
+    }
+
+    // over end
+    if(m.ballInOver>=6){
+      m.over++;
+      m.overHistory.push([...m.currentOver]);
+      m.currentOver=[];
+      m.ballInOver=0;
+      if(m.bowlerFigs[bowl]) m.bowlerFigs[bowl].overs++;
+    }
+
+    // ball limit
+    const maxBalls=R.settings.balls;
+    if(maxBalls>0&&m.balls>=maxBalls){endInnings(m);return;}
+
+    // chase target hit
+    if(m.chase&&m.target!==null&&m.scores[bat]>m.target){endInnings(m);return;}
+
+    pushState();
+    // next ball
+    if(R.settings.type==='team'&&m.ballInOver===0){
+      m.phase='bowler_pick';pushState();
+    } else {
+      hostStartBallTimer();
+    }
+  },800);
+}
+
+function endInnings(m){
+  m.innScores[m.batting].push(m.scores[m.batting]);
+
+  if(m.innings===1){
+    // switch
+    const target=m.scores[m.batting];
+    m.target=target;
+    m.chase=true;
+    const prevBat=m.batting;
+    m.batting=m.bowling;
+    m.bowling=prevBat;
+    m.scores[m.batting]=0;
+    m.wickets[m.batting]=0;
+    m.balls=0; m.over=0; m.ballInOver=0;
+    m.ballLog=[]; m.currentOver=[];
+    m.bowlerFigs={};
+    m.currentBowler=m.bowling;
+    m.innings=2;
+    m.phase='innings_break';
+    sysChat(`INNINGS BREAK — Target: ${target+1}`);
+    pushState();
+    // auto-resume after 4s
+    setTimeout(()=>{
+      m.phase=R.settings.type==='team'?'bowler_pick':'playing';
+      pushState();
+      if(R.settings.type!=='team') hostStartBallTimer();
+    },4000);
+  } else {
+    // match over
+    m.innScores[m.batting].push(m.scores[m.batting]);
+    resolveMatchResult(m);
+  }
+}
+
+function resolveMatchResult(m){
+  const s1=m.innScores[m.p1].reduce((a,b)=>a+b,0);
+  const s2=m.innScores[m.p2].reduce((a,b)=>a+b,0);
+  let winner=null,margin='',by='';
+  if(s1>s2){winner=m.p1;margin=`${s1-s2} runs`;}
+  else if(s2>s1){winner=m.p2;margin=`${s2-s1} runs`;}
+  else{margin='TIE';}
+  m.result={winner,s1,s2,margin,p1:m.p1,p2:m.p2};
+  m.phase='result';
+
+  // update stats
+  [m.p1,m.p2].forEach(id=>{
+    if(!R.stats[id]) R.stats[id]={runs:0,wickets:0,matches:0,wins:0,losses:0};
+    R.stats[id].matches++;
+    R.stats[id].runs+=m.innScores[id].reduce((a,b)=>a+b,0);
+    // count wickets taken
+    const bowlerWkts=Object.entries(m.bowlerFigs).filter(([bid])=>{
+      // bid is on this player's side - approximate: just add all figs per player
+      return bid===id;
+    }).reduce((a,[,f])=>a+f.wickets,0);
+    R.stats[id].wickets+=bowlerWkts;
+    if(winner===id) R.stats[id].wins++;
+    else if(winner) R.stats[id].losses++;
+  });
+
+  // mark match done in schedule
+  const sched=R.schedule.find(s=>s.id===R.currentMatchId);
+  if(sched){sched.done=true;sched.winner=winner;sched.s1=s1;sched.s2=s2;}
+
+  pushState();
+  // check tournament end
+  setTimeout(()=>{
+    const pending=R.schedule.filter(s=>!s.done);
+    if(pending.length===0){
+      R.phase='tend';
+    } else {
+      R.phase='lobby';
+      R.currentMatchId=null;
+      R.match=null;
+    }
+    updateTicker();
+    pushState();
+  },5000);
+}
+
+// ═══════════════════════════════════════════════════════
+//  RULES ENGINE
+// ═══════════════════════════════════════════════════════
+function applyRules(mode,bat,bowl,score){
+  switch(mode){
+    case 'NORMAL':case 'B10':case 'TEST':
+      if(bat===bowl) return{s:score,out:true,type:'out'};
+      return{s:score+bat,out:false,type:'add',pts:bat};
+    case 'CRAZY':
+      if(bat===bowl){const p=bat*bat;return{s:score+p,out:false,type:'multiply',pts:p};}
+      if(isAdj(bat,bowl)) return{s:score,out:true,type:'out'};
+      return{s:score+bat,out:false,type:'add',pts:bat};
+    case 'INSANE':
+      if(bat===bowl) return{s:score,out:true,type:'out'};
+      if(isAdj(bat,bowl)){const p=bat*bowl;return{s:score+p,out:false,type:'multiply',pts:p};}
+      return{s:score+bat,out:false,type:'add',pts:bat};
+    case 'MAD':
+      if(bat===bowl){const p=bat+bowl;return{s:score+p,out:false,type:'add2',pts:p};}
+      if(isAdj(bat,bowl)) return{s:score,out:true,type:'out'};
+      {const p=bat*bowl;return{s:score+p,out:false,type:'multiply',pts:p};}
+    case 'NOWAY':
+      if(bat===bowl){const p=bat*bowl;return{s:score+p,out:false,type:'multiply',pts:p};}
+      if(isAdj(bat,bowl)){const p=bat+bowl;return{s:score+p,out:false,type:'add2',pts:p};}
+      return{s:score,out:true,type:'out'};
+  }
+}
+function buildComm(mode,bat,bowl,res){
+  if(res.out) return rnd(COM_OUT);
+  if(res.type==='multiply') return rnd(COM_MULT)+` +${res.pts}`;
+  if(res.pts>=8) return rnd(COM_BIG)+` +${res.pts}`;
+  return rnd(COM_RUN)+` +${res.pts}`;
+}
+
+// ═══════════════════════════════════════════════════════
+//  TOURNAMENT SCHEDULE
+// ═══════════════════════════════════════════════════════
+function buildSchedule(){
+  const ids=R.players.map(p=>p.id);
+  const sched=[];
+  let id=0;
+  for(let i=0;i<ids.length;i++)
+    for(let j=i+1;j<ids.length;j++)
+      sched.push({id:id++,p1:ids[i],p2:ids[j],done:false,winner:null,s1:0,s2:0});
+  return sched;
+}
+
+function buildTeamSchedule(){
+  const a=R.teams.A.players,b=R.teams.B.players;
+  const sched=[];let id=0;
+  a.forEach(p1=>b.forEach(p2=>sched.push({id:id++,p1,p2,done:false,winner:null,s1:0,s2:0})));
+  return sched;
+}
+
+function pickMode(){
+  const s=R.settings;
+  if(s.modeType==='single') return s.mode;
+  if(s.modeType==='double') return rnd([s.mode,s.mode2]);
+  return rnd(MODES);
+}
+
+function launchNextMatch(){
+  const next=R.schedule.find(s=>!s.done);
+  if(!next){R.phase='tend';updateTicker();pushState();return;}
+  R.currentMatchId=next.id;
+  const mode=pickMode();
+  R.match=newMatchState(next.p1,next.p2,mode);
+  R.phase='match';
+
+  // tell players their roles
+  [next.p1,next.p2].forEach(id=>sendToClient(id,{type:'your_role',role:'player'}));
+  R.players.filter(p=>p.id!==next.p1&&p.id!==next.p2)
+    .forEach(p=>sendToClient(p.id,{type:'your_role',role:'spectator'}));
+  if(myId===next.p1||myId===next.p2) myRole='player';
+  else myRole='spectator';
+
+  hostStartMatch();
+}
+
+function sysChat(text){
+  R.chat.push({from:'SYSTEM',text,ts:Date.now(),sys:true});
+  if(R.chat.length>100) R.chat.shift();
+}
+
+function updateTicker(){
+  const pending=R.schedule.filter(s=>!s.done);
+  const next=pending[0];
+  const cur=R.currentMatchId!==null?R.schedule.find(s=>s.id===R.currentMatchId):null;
+  let parts=[];
+  if(cur&&!cur.done) parts.push(`🏏 LIVE: ${playerName(cur.p1)} vs ${playerName(cur.p2)}`);
+  if(next&&(!cur||next.id!==cur.id)) parts.push(`⏭ NEXT: ${playerName(next.p1)} vs ${playerName(next.p2)}`);
+  const upcoming=pending.slice(1,3);
+  upcoming.forEach(u=>parts.push(`📅 ${playerName(u.p1)} vs ${playerName(u.p2)}`));
+  R.ticker=parts.join('  ·  ')||'TOURNAMENT COMPLETE';
+}
+
+// ═══════════════════════════════════════════════════════
+//  STATE SYNC
+// ═══════════════════════════════════════════════════════
+function pushState(){
+  updateTicker();
+  broadcast({type:'state_update',state:R});
+  applyState(R);
+}
+
+function applyState(state){
+  R=state;
+  renderAll();
+}
+
+// ═══════════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════════
+function renderAll(){
+  renderTicker();
+  renderPlayerList();
+  renderBracket();
+  renderStats();
+  renderChats();
+  renderMatchScreen();
+  renderStartBtn();
+  renderSettingsSummary();
+  // screen routing
+  if(R.phase==='lobby'||R.phase==='draft'){
+    if(R.phase==='draft'&&R.settings.type==='team') showScreen('s-draft');
+    else showScreen('s-lobby');
+    renderDraft();
+  } else if(R.phase==='match'){
+    showScreen('s-match');
+  } else if(R.phase==='tend'){
+    showScreen('s-tend');
+    renderTournamentEnd();
+  }
+}
+
+function renderTicker(){
+  document.getElementById('ticker-text').textContent=R.ticker||'WAITING...';
+}
+
+function renderSettingsSummary(){
+  const s=R.settings;
+  document.getElementById('settings-summary').innerHTML=
+    `<span class="mono" style="font-size:11px;color:var(--dim)">
+    ${s.type.toUpperCase()} · ${s.balls||'∞'} BALLS · ${s.wickets} WICKETS ·
+    ${s.modeType==='single'?s.mode:s.modeType.toUpperCase()+' MODE'} · ${s.size} PLAYERS
+    </span>`;
+}
+
+function renderPlayerList(){
+  const el=document.getElementById('player-list');
+  el.innerHTML=R.players.map(p=>{
+    const tags=[];
+    if(p.isHost) tags.push('<span class="ptag tag-host">HOST</span>');
+    if(p.ready) tags.push('<span class="ptag tag-ready">READY</span>');
+    else tags.push('<span class="ptag tag-wait">WAITING</span>');
+    if(p.team==='A') tags.push('<span class="ptag tag-team-a">TEAM A</span>');
+    if(p.team==='B') tags.push('<span class="ptag tag-team-b">TEAM B</span>');
+    if(R.teams.A.captain===p.id||R.teams.B.captain===p.id) tags.push('<span class="ptag tag-captain">CAPTAIN</span>');
+    return `<div class="player-item"><span class="pname">${p.name}</span>${tags.join('')}</div>`;
+  }).join('');
+}
+
+function renderBracket(){
+  const el=document.getElementById('bracket-list');
+  const card=document.getElementById('bracket-card');
+  if(!R.schedule.length){card.style.display='none';return;}
+  card.style.display='block';
+  el.innerHTML=R.schedule.map(s=>{
+    const cur=s.id===R.currentMatchId;
+    const cls=s.done?'done':cur?'current':'pending';
+    const status=s.done?`<span class="bi-status bst-done">DONE</span>`:
+                  cur?`<span class="bi-status bst-live">LIVE</span>`:
+                  `<span class="bi-status bst-pend">UPCOMING</span>`;
+    const result=s.done?`<span class="bi-result">${s.s1}–${s.s2}${s.winner?` (${playerName(s.winner)})`:' TIE'}</span>`:'';
+    return `<div class="bracket-item ${cls}">
+      <span class="bi-teams">${playerName(s.p1)} <span style="color:var(--dim)">vs</span> ${playerName(s.p2)}</span>
+      ${result}${status}
+    </div>`;
+  }).join('');
+}
+
+function renderStats(){
+  const all=Object.entries(R.stats).map(([id,s])=>({id,name:playerName(id),...s}));
+  all.sort((a,b)=>b.runs-a.runs);
+  const half=Math.ceil(R.settings.size/2);
+  const top=all.slice(0,half);
+  document.getElementById('stats-tbody').innerHTML=top.map((p,i)=>
+    `<tr>
+      <td class="rank">${i+1}</td>
+      <td class="${i===0?'highlight':''}">${p.name}</td>
+      <td>${p.runs}</td>
+      <td>${p.wickets}</td>
+      <td style="color:var(--green)">${p.wins}</td>
+      <td style="color:var(--red)">${p.losses}</td>
+    </tr>`
+  ).join('');
+}
+
+function renderChats(){
+  renderChatMsgs('lobby-chat-msgs',R.chat);
+  const myTeam=myPlayer()?.team;
+  if(myTeam==='A') renderChatMsgs('team-chat-msgs',R.teamChatA);
+  else if(myTeam==='B') renderChatMsgs('team-chat-msgs',R.teamChatB);
+  document.getElementById('teamchat-tab').style.display=R.settings.type==='team'?'':'none';
+}
+
+function renderChatMsgs(elId,msgs){
+  const el=document.getElementById(elId);
+  if(!el) return;
+  const atBottom=el.scrollTop+el.clientHeight>=el.scrollHeight-10;
+  el.innerHTML=msgs.map(m=>
+    `<div class="chat-entry${m.sys?' system':''}">
+      <span class="who">${m.from}</span>
+      <span class="msg">${escHtml(m.text)}</span>
+    </div>`
+  ).join('');
+  if(atBottom) el.scrollTop=el.scrollHeight;
+}
+
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function renderStartBtn(){
+  if(!isHost) {document.getElementById('host-start-wrap').style.display='none';return;}
+  document.getElementById('host-start-wrap').style.display='block';
+  const allReady=R.players.filter(p=>!p.isHost).every(p=>p.ready);
+  const enough=R.players.length>=2;
+  const btn=document.getElementById('btn-start');
+  btn.disabled=!(allReady&&enough);
+  document.getElementById('start-hint').textContent=
+    !enough?'Need at least 2 players':
+    !allReady?'Waiting for all players to ready up...':
+    'All ready! You can start.';
+}
+
+function renderDraft(){
+  if(R.phase!=='draft'||R.settings.type!=='team') return;
+  const m=R.match;
+  const capA=R.teams.A.captain,capB=R.teams.B.captain;
+  const isCaptain=myId===capA||myId===capB;
+  const myTeam=myId===capA?'A':myId===capB?'B':null;
+  document.getElementById('draft-info').textContent=
+    isCaptain?`You are Captain of Team ${myTeam}. Pick a player.`:
+    `Waiting for captains to draft teams...`;
+
+  ['A','B'].forEach(t=>{
+    document.getElementById(`team-${t.toLowerCase()}-list`).innerHTML=
+      R.teams[t].players.map(id=>`<div class="player-item"><span class="pname">${playerName(id)}</span></div>`).join('');
+  });
+
+  const unpicked=R.players.filter(p=>!p.team&&p.id!==capA&&p.id!==capB);
+  const poolEl=document.getElementById('draft-pool');
+  const wrap=document.getElementById('draft-pool-wrap');
+  const waiting=document.getElementById('draft-waiting');
+  const myTurn=isCaptain&&m?.draftTurn===myTeam;
+  wrap.style.display=myTurn&&unpicked.length?'block':'none';
+  waiting.style.display=!myTurn&&unpicked.length?'block':'none';
+  poolEl.innerHTML=unpicked.map(p=>
+    `<div class="draft-player" onclick="captainPick('${p.id}')">${p.name}</div>`
+  ).join('');
+}
+
+function renderMatchScreen(){
+  const m=R.match;
+  if(!m) return;
+  const p1name=playerName(m.p1),p2name=playerName(m.p2);
+  const batName=playerName(m.batting),bowlName=playerName(m.bowling);
+
+  document.getElementById('mph-title').textContent=`${p1name} vs ${p2name}`;
+  document.getElementById('mph-sub').textContent=`${m.mode} MODE · INNINGS ${m.innings}`;
+
+  document.getElementById('score-name-bat').textContent=batName+' (BAT)';
+  document.getElementById('score-name-bowl').textContent=bowlName+' (BOWL)';
+  document.getElementById('score-bat').textContent=m.scores[m.batting]??0;
+  document.getElementById('score-bowl').textContent=m.target!==null?m.target:'—';
+  document.getElementById('score-bat-wkts').textContent=`${m.wickets[m.batting]??0}/${R.settings.wickets} wkts`;
+  document.getElementById('score-bowl-info').textContent=m.target!==null?`TARGET: ${m.target+1}`:'';
+
+  const ballsMax=R.settings.balls;
+  const overTxt=`OVER ${m.over+1} · BALL ${m.ballInOver+1}${ballsMax?` · ${ballsMax-m.balls} LEFT`:''}`;
+  document.getElementById('over-info').textContent=overTxt;
+
+  // ball log
+  const bl=m.ballLog||[];
+  const pips=document.getElementById('match-ball-log');
+  pips.innerHTML=Array(6).fill(0).map((_,i)=>{
+    const p=bl[i];
+    if(!p) return `<div class="bpip">·</div>`;
+    if(p.type==='out') return `<div class="bpip out">W</div>`;
+    if(p.type==='multiply') return `<div class="bpip mult">×</div>`;
+    return `<div class="bpip run">${p.val}</div>`;
+  }).join('');
+
+  // timer & lock
+  renderTimer(m);
+  renderLockBoxes(m);
+
+  // numpad
+  const isPlayer=(myId===m.p1||myId===m.p2)&&myRole==='player';
+  document.getElementById('numpad-wrap').style.display=isPlayer&&m.phase==='playing'?'block':'none';
+  document.getElementById('spectator-panel').style.display=!isPlayer?'block':'none';
+
+  if(isPlayer&&m.phase==='playing'){
+    buildMatchNumpad(m.pool);
+    document.getElementById('numpad-prompt').textContent=
+      myId===m.batting?'ENTER BATTING NUMBER':'ENTER BOWLING NUMBER';
+  }
+
+  // match chat sidebar
+  renderChatMsgs('match-chat-msgs',R.chat.slice(-30));
+
+  // bowling figures
+  const bfEl=document.getElementById('bowl-figs');
+  bfEl.innerHTML=Object.entries(m.bowlerFigs).map(([id,f])=>
+    `<div class="bowl-fig"><span class="bf-name">${playerName(id)}</span>
+     <span class="bf-stat">${f.overs}.0-${f.runs}-${f.wickets}</span></div>`
+  ).join('')||'<div class="mono" style="font-size:11px;color:var(--dim)">No data yet</div>';
+
+  // over history
+  const ohEl=document.getElementById('over-history');
+  ohEl.innerHTML=(m.overHistory||[]).map((ov,i)=>`
+    <div class="over-card">
+      <div class="ot">OVER ${i+1}</div>
+      <div class="ob">${ov.map(p=>{
+        if(p.type==='out') return `<div class="bpip out" style="width:24px;height:24px;font-size:9px">W</div>`;
+        if(p.type==='multiply') return `<div class="bpip mult" style="width:24px;height:24px;font-size:9px">×</div>`;
+        return `<div class="bpip run" style="width:24px;height:24px;font-size:9px">${p.val}</div>`;
+      }).join('')}</div>
+    </div>`).join('');
+
+  // bowler pick
+  const bpWrap=document.getElementById('bowler-pick-wrap');
+  if(m.phase==='bowler_pick'&&myId===m.fieldingCaptain){
+    bpWrap.style.display='block';
+    const avail=m.fieldingTeamPlayers||[];
+    document.getElementById('bowler-pick-list').innerHTML=avail.map(id=>{
+      const fig=m.bowlerFigs[id]||{overs:0,runs:0,wickets:0};
+      const maxOv=m.maxBowlerOvers;
+      const disabled=maxOv>0&&fig.overs>=maxOv;
+      return `<div class="player-item" style="${disabled?'opacity:0.4':'cursor:pointer'}" onclick="${disabled?'':` bowlerPick('${id}')`}">
+        <span class="pname">${playerName(id)}</span>
+        <span class="ptag" style="font-family:'Share Tech Mono';font-size:10px">${fig.overs}ov ${fig.runs}r ${fig.wickets}w</span>
+        ${disabled?'<span class="ptag tag-wait">LIMIT</span>':''}
+      </div>`;
+    }).join('');
+  } else {
+    bpWrap.style.display='none';
+  }
+
+  // innings break overlay
+  if(m.phase==='innings_break'){
+    document.getElementById('mph-title').textContent='INNINGS BREAK';
+    document.getElementById('mph-sub').textContent=`Target: ${(m.target||0)+1} runs`;
+  }
+
+  // result
+  if(m.phase==='result'&&m.result){
+    const r=m.result;
+    const you=myId===r.p1||myId===r.p2;
+    const youWon=r.winner===myId;
+    const cls=!r.winner?'draw':you?(youWon?'win':'lose'):'';
+    document.getElementById('mresult-content').innerHTML=`
+      <h2>${!r.winner?'TIE':r.winner===myId?'YOU WIN!':playerName(r.winner)+' WINS'}</h2>
+      <div class="mono" style="font-size:14px;color:var(--dim);margin:8px 0">${r.margin}</div>
+      <div style="display:flex;justify-content:center;gap:30px;font-family:'Share Tech Mono',monospace;margin-top:12px">
+        <div style="text-align:center"><div style="font-size:10px;color:var(--dim)">${playerName(r.p1)}</div><div style="font-size:36px;color:var(--gold)">${r.s1}</div></div>
+        <div style="text-align:center"><div style="font-size:10px;color:var(--dim)">${playerName(r.p2)}</div><div style="font-size:36px;color:var(--gold)">${r.s2}</div></div>
+      </div>`;
+    document.getElementById('mresult-content').parentElement.parentElement.className='result-big '+cls;
+    showScreen('s-mresult');
+  }
+}
+
+function renderTimer(m){
+  const circle=document.getElementById('timer-circle');
+  const num=document.getElementById('timer-num');
+  const circ=213.6;
+  if(m.phase!=='playing'||!m.timerStart){
+    circle.style.strokeDashoffset=0;
+    num.textContent='';
+    return;
+  }
+  const elapsed=(Date.now()-m.timerStart)/1000;
+  const remaining=Math.max(0,LOCK_SEC-elapsed);
+  const offset=circ*(1-remaining/LOCK_SEC);
+  circle.style.strokeDashoffset=offset;
+  num.textContent=Math.ceil(remaining);
+  // colour
+  circle.style.stroke=remaining<1?'var(--red)':remaining<2?'#ff9500':'var(--gold)';
+}
+
+function renderLockBoxes(m){
+  ['p1','p2'].forEach((pk,i)=>{
+    const id=m[pk];
+    const box=document.getElementById('lock-'+pk);
+    const valEl=document.getElementById('lock-'+pk+'-val');
+    const lbl=document.getElementById('lock-'+pk+'-name');
+    lbl.textContent=playerName(id);
+    const locked=m.locked&&m.locked[id]!==null;
+    if(m.phase==='playing'){
+      if(locked){
+        box.classList.add('locked-in');
+        // only show own number or if revealed
+        valEl.classList.remove('pending');
+        if(id===myId) valEl.textContent=m.locked[id];
+        else valEl.textContent='✓';
+      } else {
+        box.classList.remove('locked-in','revealed');
+        valEl.classList.add('pending');
+        valEl.textContent='?';
+      }
+    } else {
+      // after lock resolved — show both numbers
+      if(m.locked&&m.locked[id]!==null){
+        box.classList.add('revealed');
+        valEl.classList.remove('pending');
+        valEl.textContent=m.locked[id];
+      }
+    }
+  });
+}
+
+function renderTournamentEnd(){
+  const all=Object.entries(R.stats).map(([id,s])=>({id,name:playerName(id),...s}));
+  all.sort((a,b)=>b.wins-a.wins||b.runs-a.runs);
+  const winner=all[0];
+  document.getElementById('tend-content').innerHTML=`
+    <div style="font-size:56px;margin-bottom:8px">🏆</div>
+    <h3 style="color:var(--gold);font-size:28px;letter-spacing:3px;margin-bottom:16px">
+      ${winner?.name||'?'} WINS THE TOURNAMENT!
+    </h3>
+    <table class="stats-table" style="max-width:400px;margin:0 auto">
+      <thead><tr><th>#</th><th>PLAYER</th><th>RUNS</th><th>WKTS</th><th>W</th><th>L</th></tr></thead>
+      <tbody>${all.map((p,i)=>`<tr>
+        <td class="rank">${i+1}${i===0?' 🥇':i===1?' 🥈':i===2?' 🥉':''}</td>
+        <td class="${i===0?'highlight':''}">${p.name}</td>
+        <td>${p.runs}</td><td>${p.wickets}</td>
+        <td style="color:var(--green)">${p.wins}</td>
+        <td style="color:var(--red)">${p.losses}</td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+}
+
+// ═══════════════════════════════════════════════════════
+//  UI ACTIONS
+// ═══════════════════════════════════════════════════════
+function goCreate(){
+  if(!getMyName()) return;
+  showScreen('s-create');
+  document.getElementById('cfg-modetype').addEventListener('change',function(){
+    const v=this.value;
+    document.getElementById('mode-pick-wrap').style.display=v!=='random'?'block':'none';
+    document.getElementById('mode-pick2-wrap').style.display=v==='double'?'block':'none';
+  });
+}
+
+function goJoin(){
+  if(!getMyName()) return;
+  document.getElementById('join-panel').style.display='block';
+}
+
+function getMyName(){
+  myName=document.getElementById('inp-name').value.trim();
+  if(!myName){notify('Please enter your name first');return false;}
+  return true;
+}
+
+async function createRoom(){
+  const code=randId(6);
+  R.roomCode=code;
+  R.settings={
+    size:Math.max(2,Math.min(12,parseInt(document.getElementById('cfg-size').value)||4)),
+    wickets:Math.max(1,parseInt(document.getElementById('cfg-wickets').value)||3),
+    balls:Math.max(0,parseInt(document.getElementById('cfg-balls').value)||30),
+    type:document.getElementById('cfg-type').value,
+    modeType:document.getElementById('cfg-modetype').value,
+    mode:document.getElementById('cfg-mode').value,
+    mode2:document.getElementById('cfg-mode2').value,
+  };
+  notify('Connecting...');
+  try{
+    await initPeer(code+'-host');
+    isHost=true; myId=myName+'-'+randId(3);
+    R.players=[{id:myId,name:myName,team:'',ready:true,isHost:true}];
+    R.stats[myId]={runs:0,wickets:0,matches:0,wins:0,losses:0};
+    document.getElementById('lobby-code').textContent=code;
+    showScreen('s-lobby');
+    pushState();
+    notify('Room created! Share code: '+code);
+  }catch(e){notify('Failed: '+e);}
+}
+
+async function joinRoom(){
+  const code=document.getElementById('inp-code').value.trim().toUpperCase();
+  if(code.length<4){notify('Enter a valid room code');return;}
+  const status=document.getElementById('join-status');
+  status.textContent='Connecting...';
+  try{
+    myId=myName+'-'+randId(3);
+    await initPeer(myId);
+    hostConn=peer.connect(code+'-host',{reliable:true});
+    hostConn.on('open',()=>{
+      hostConn.on('data',d=>guestHandle(null,d));
+      hostConn.send({type:'join',name:myName});
+      status.textContent='Connected!';
+      R.roomCode=code;
+      document.getElementById('lobby-code').textContent=code;
+      showScreen('s-lobby');
+    });
+    hostConn.on('error',e=>{status.textContent='Connection failed: '+e;});
+    setTimeout(()=>{if(!hostConn.open) status.textContent='Connection timed out.';},8000);
+  }catch(e){status.textContent='Error: '+e;}
+}
+
+function toggleReady(){
+  sendToHost({type:'ready'});
+  if(isHost){
+    const p=myPlayer();
+    if(p) p.ready=!p.ready;
+    pushState();
+  }
+}
+
+function hostStartGame(){
+  if(!isHost) return;
+  R.phase='match';
+  if(R.settings.type==='team'){
+    // assign captains randomly
+    const ids=R.players.map(p=>p.id);
+    const shuffled=ids.sort(()=>Math.random()-0.5);
+    R.teams.A.captain=shuffled[0];
+    R.teams.B.captain=shuffled[1];
+    R.players.find(p=>p.id===shuffled[0]).team='A';
+    R.players.find(p=>p.id===shuffled[1]).team='B';
+    R.teams.A.players=[shuffled[0]];
+    R.teams.B.players=[shuffled[1]];
+    // start draft
+    const mode=pickMode();
+    R.match={phase:'draft',draftTurn:'A',mode,pool:MODE_POOL[mode],p1:null,p2:null,
+      scores:{},wickets:{},balls:0,over:0,ballInOver:0,locked:{},timerStart:null,
+      ballLog:[],overHistory:[],currentOver:[],bowlerFigs:{},currentBowler:null,
+      fieldingCaptain:null,fieldingTeamPlayers:[],maxBowlerOvers:0,
+      target:null,chase:false,result:null,innings:1,innScores:{},batting:null,bowling:null};
+    R.phase='draft';
+    sendToClient(shuffled[0],{type:'your_role',role:'captain-a'});
+    sendToClient(shuffled[1],{type:'your_role',role:'captain-b'});
+    R.players.filter(p=>p.id!==shuffled[0]&&p.id!==shuffled[1])
+      .forEach(p=>sendToClient(p.id,{type:'your_role',role:'spectator'}));
+    if(myId===shuffled[0]) myRole='captain-a';
+    else if(myId===shuffled[1]) myRole='captain-b';
+    else myRole='spectator';
+    sysChat('Team draft started! Captains are picking teams.');
+    pushState();
+  } else {
+    R.schedule=buildSchedule();
+    launchNextMatch();
+  }
+}
+
+function sendLobbyChat(){
+  const el=document.getElementById('lobby-chat-in');
+  const text=el.value.trim();
+  if(!text) return;
+  sendToHost({type:'chat',text});
+  if(isHost) hostHandleChat(myId,text);
+  el.value='';
+}
+
+function sendTeamChat(){
+  const el=document.getElementById('team-chat-in');
+  const text=el.value.trim();
+  if(!text) return;
+  sendToHost({type:'team_chat',text});
+  if(isHost) hostHandleTeamChat(myId,text);
+  el.value='';
+}
+
+function sendMatchChat(){
+  const el=document.getElementById('match-chat-in');
+  const text=el.value.trim();
+  if(!text) return;
+  sendToHost({type:'chat',text});
+  if(isHost) hostHandleChat(myId,text);
+  el.value='';
+}
+
+function sendReact(emoji){
+  sendToHost({type:'react',emoji});
+  if(isHost) hostHandleReact(myId,emoji);
+}
+
+function showReactPop(emoji,from){
+  const el=document.createElement('div');
+  el.className='react-pop';
+  el.textContent=emoji;
+  el.style.left=Math.random()*60+20+'%';
+  el.style.top=Math.random()*40+30+'%';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1600);
+  // also show in commentary
+  document.getElementById('match-comm').textContent=`${from}: ${emoji}`;
+}
+
+let lastPickTime=0;
+function pickNum(n){
+  const now=Date.now();
+  if(now-lastPickTime<300) return;
+  lastPickTime=now;
+  const m=R.match;
+  if(!m||m.phase!=='playing') return;
+  if(myId!==m.p1&&myId!==m.p2) return;
+  if(m.locked&&m.locked[myId]!==null) return;
+  // optimistic
+  if(isHost) hostHandlePick(myId,n);
+  else sendToHost({type:'pick',num:n});
+}
+
+function buildMatchNumpad(pool){
+  const pad=document.getElementById('match-numpad');
+  const cls=pool.length===10?'p10':pool.length===6?'p6':'p4';
+  pad.className='numpad '+cls;
+  pad.innerHTML=pool.map(n=>`<button class="nmbtn" id="mnbtn-${n}" onclick="pickNum(${n})">${n}</button>`).join('');
+}
+
+function captainPick(playerId){
+  sendToHost({type:'captain_pick',playerId});
+  if(isHost) hostHandleCaptainPick(myId,playerId);
+}
+
+function bowlerPick(playerId){
+  sendToHost({type:'bowler_pick',playerId});
+  if(isHost) hostHandleBowlerPick(myId,playerId);
+}
+
+function backToLobby(){showScreen('s-lobby');}
+
+function lobbyTab(name,ev){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.getElementById('ltab-'+name).classList.add('active');
+  ev.target.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════
+//  KEYBOARD
+// ═══════════════════════════════════════════════════════
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('s-match').classList.contains('active')) return;
+  if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+  const m=R.match;
+  if(!m||m.phase!=='playing') return;
+  if(myId!==m.p1&&myId!==m.p2) return;
+  const pool=m.pool||[];
+  let n=null;
+  if(e.key==='0'&&pool.includes(10)) n=10;
+  else{const k=parseInt(e.key);if(!isNaN(k)&&pool.includes(k)) n=k;}
+  if(n!==null){e.preventDefault();pickNum(n);}
+  if(e.key==='Enter'&&m.locked&&m.locked[myId]===null){
+    // press enter to lock currently hovered — handled by button click
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+//  TIMER TICK
+// ═══════════════════════════════════════════════════════
+setInterval(()=>{
+  if(R.match&&R.match.phase==='playing') renderTimer(R.match);
+},100);
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+showScreen('s-land');
+</script>
+</body>
+</html>
