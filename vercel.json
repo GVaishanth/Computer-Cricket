@@ -1,6 +1,0 @@
-{
-  "rewrites": [
-    { "source": "/multiplayer", "destination": "/cricket_multiplayer.html" },
-    { "source": "/", "destination": "/computer_cricket.html" }
-  ]
-}
