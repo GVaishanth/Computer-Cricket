@@ -16,13 +16,20 @@
   --radius:8px;
 }
 /* Mode colour themes applied to :root when a match is active */
-.theme-NORMAL{--accent:#d0d0d0;--accent2:#ffffff;--bg:#080808;--panel:#101010;--panel2:#181818;--border:#2a2a2a;}
-.theme-CRAZY{--accent:#ffd700;--accent2:#ffe84a;--bg:#001a00;--panel:#002200;--panel2:#002800;--border:#1a4a00;}
-.theme-INSANE{--accent:#ff6b00;--accent2:#ff9500;--bg:#030f24;--panel:#040f2a;--panel2:#061230;--border:#0d2060;}
-.theme-MAD{--accent:#ffc300;--accent2:#ffe060;--bg:#1a000c;--panel:#200010;--panel2:#280014;--border:#4a0028;}
-.theme-NOWAY{--accent:#cf0a2c;--accent2:#ff3355;--bg:#00080f;--panel:#000b18;--panel2:#000e20;--border:#001840;}
-.theme-B10{--accent:#ffb612;--accent2:#ffce50;--bg:#071507;--panel:#0d1e0d;--panel2:#112411;--border:#1e4a1e;}
-.theme-TEST{--accent:#1a3a5c;--accent2:#2a5a8c;--bg:#f0ead8;--panel:#e8e0c8;--panel2:#ddd8c0;--border:#b8b098;--chalk:#1a1a1a;--dim:#4a4a4a;--gold:#1a3a5c;--gold-bright:#0a2040;}
+/* NZ: Black · White · Silver */
+.theme-NORMAL{--accent:#e8e8e8;--accent2:#ffffff;--bg:#050505;--panel:#0d0d0d;--panel2:#141414;--border:#2e2e2e;--chalk:#f0f0f0;--dim:#888888;--green:#c0c0c0;--blue:#a0a0a0;}
+/* Australia: Gold · Green · Dark Navy */
+.theme-CRAZY{--accent:#ffd700;--accent2:#ffe84a;--bg:#001500;--panel:#001c00;--panel2:#002200;--border:#1a4500;--chalk:#e8e4d4;--dim:#7a9060;--green:#ffd700;--blue:#002f6c;}
+/* India: Royal Blue · Saffron · Green */
+.theme-INSANE{--accent:#ff6b00;--accent2:#ff9500;--bg:#020c20;--panel:#031228;--panel2:#041530;--border:#0a2255;--chalk:#e8e4d4;--dim:#7a8890;--green:#138808;--blue:#4169e1;}
+/* West Indies: Maroon · Gold · Black */
+.theme-MAD{--accent:#ffc300;--accent2:#ffe060;--bg:#0f0005;--panel:#180008;--panel2:#20000c;--border:#500020;--chalk:#f0e8dc;--dim:#a08070;--green:#ffc300;--blue:#7b1c1c;}
+/* England: Navy · Red · White */
+.theme-NOWAY{--accent:#cf0a2c;--accent2:#ff3355;--bg:#000812;--panel:#000b1c;--panel2:#000e24;--border:#001a50;--chalk:#e8ecf4;--dim:#7080a0;--green:#ffffff;--blue:#003090;}
+/* South Africa: Green · Gold · Red */
+.theme-B10{--accent:#ffb612;--accent2:#ffce50;--bg:#071007;--panel:#0c1a0c;--panel2:#102010;--border:#1a4518;--chalk:#e8e4d4;--dim:#909870;--green:#007b40;--blue:#e03a2e;}
+/* Classic Whites: Cream · Navy · Sepia */
+.theme-TEST{--accent:#1a3a5c;--accent2:#2a5a8c;--bg:#f5eed8;--panel:#ede5cc;--panel2:#e4dcc0;--border:#c8bfa0;--chalk:#1a1a2a;--dim:#5a5a6a;--gold:#1a3a5c;--gold-bright:#0a2040;--green:#1a3a5c;--blue:#8b1a1a;}
 
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--chalk);font-family:'Rajdhani',sans-serif;min-height:100vh;transition:background 0.5s,color 0.3s;}
@@ -265,6 +272,12 @@ select option{background:var(--panel);}
 /* ── TOOLTIP ── */
 .tip{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);margin-top:5px;}
 
+/* TEST innings tracker */
+.inn-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--dim);}
+.inn-row:last-child{border-bottom:none;}
+.inn-row.active{color:var(--accent);}
+.inn-row.done{color:var(--chalk);}
+
 @media(max-width:500px){
   h1{font-size:32px;}
   .numpad.p10{grid-template-columns:repeat(5,48px);}
@@ -506,6 +519,12 @@ select option{background:var(--panel);}
         <div class="score-side"><div class="sname" id="sn-bowl">BOWLING</div><div class="sval" id="sv-bowl">—</div><div class="swkts" id="sw-bowl"></div></div>
       </div>
       <div class="card-sm mono" id="over-info" style="text-align:center;font-size:11px;color:var(--dim)">OVER 1 · BALL 1</div>
+
+      <!-- TEST innings tracker -->
+      <div id="test-inn-tracker" style="display:none" class="card-sm">
+        <div class="stitle">TEST INNINGS</div>
+        <div id="test-inn-rows"></div>
+      </div>
       <div class="ball-log" id="match-ball-log"></div>
 
       <!-- timer -->
@@ -633,14 +652,21 @@ const MODE_POOL={
   NOWAY:[1,2,3,4,5,6,7,8,9,10],B10:[7,8,9,10],TEST:[1,2,3,4,5,6]
 };
 const COM={
-  run:['Good timing!','Clean hit!','Finds the gap!','Running hard!','Safe!','Through the covers!','Cheeky deflection!'],
-  big:['HUGE!','What a strike!','Thunderous drive!','Maximum power!','Going all the way!'],
-  out:["OUT! Caught behind!","Stumped!","Bowled 'em!","Plumb LBW!","Gone! Walk of shame."],
-  mult:['SAME — MULTIPLIED!','Score goes BERSERK!','MEGA MULTIPLY!','Psychic match — SQUARED!'],
-  adj_out:['Too close — OUT!','Adjacent and gone!'],
+  run:     ['Good timing!','Clean hit!','Finds the gap!','Running hard!','Safe!','Through the covers!','Cheeky deflection!'],
+  big:     ['HUGE!','What a strike!','Thunderous drive!','Maximum power!','Going all the way!'],
+  out:     ["OUT! Caught behind!","Stumped!","Bowled 'em!","Plumb LBW!","Gone! Walk of shame."],
+  mult:    ['MULTIPLIED!','Score goes BERSERK!','Massive hit!'],
+  crazy_m: ['SAME NUMBER — SQUARED!','Matched it! Number squared!','Psychic connection — SQUARED!'],
+  crazy_o: ['Adjacent — OUT! Too close for comfort.','One away and GONE!','ADJACENT and DISMISSED!'],
+  insane_m:['ADJACENT — EXPLODES!','So close — and it MULTIPLIES!','Nearly same — MASSIVE!'],
+  mad_a:   ['MATCHED! Bonus add!','Same number — extra runs!','Synchronised — nice bonus!'],
+  mad_m:   ['Far apart — HUGE MULTIPLY!','Different numbers — MULTIPLIED!','Big gap, big score!'],
+  noway_m: ['SAME — MULTIPLIED! NOWAY!','Matched it — massive score!'],
+  noway_a: ['Adjacent — bonus add! Phew!','So close to out — adds instead!'],
+  noway_o: ['OUT! Only adjacents score here.','Wrong number — GONE!'],
+  adj_out: ['Too close — OUT!','Adjacent and gone!'],
   adj_mult:['ADJACENT — EXPLODES!','So close — and it MULTIPLIES!'],
-  add2:['MATCHED — bonus add!','Same number, extra runs!'],
-  noway_out:['OUT! Only adjacents survive here.','Wrong number — GONE!'],
+  add2:    ['MATCHED — bonus add!','Same number, extra runs!'],
 };
 function rnd(a){return a[Math.floor(Math.random()*a.length)];}
 function isAdj(a,b){return Math.abs(a-b)===1;}
@@ -674,15 +700,22 @@ function applyRules(mode,bat,bowl,score){
 
 function buildComm(mode,bat,bowl,res){
   if(res.out){
-    if(mode==='CRAZY'&&isAdj(bat,bowl)) return rnd(COM.adj_out);
-    if(mode==='NOWAY'&&bat!==bowl&&!isAdj(bat,bowl)) return rnd(COM.noway_out);
+    if(mode==='CRAZY'&&isAdj(bat,bowl))              return rnd(COM.crazy_o);
+    if(mode==='NOWAY'&&bat!==bowl&&!isAdj(bat,bowl)) return rnd(COM.noway_o);
     return rnd(COM.out);
   }
   if(res.type==='multiply'){
-    if(mode==='INSANE') return rnd(COM.adj_mult)+` +${res.pts}`;
+    if(mode==='CRAZY')  return rnd(COM.crazy_m)+` +${res.pts}`;
+    if(mode==='INSANE') return rnd(COM.insane_m)+` +${res.pts}`;
+    if(mode==='MAD')    return rnd(COM.mad_m)+` +${res.pts}`;
+    if(mode==='NOWAY')  return rnd(COM.noway_m)+` +${res.pts}`;
     return rnd(COM.mult)+` +${res.pts}`;
   }
-  if(res.type==='add2') return rnd(COM.add2)+` +${res.pts}`;
+  if(res.type==='add2'){
+    if(mode==='MAD')   return rnd(COM.mad_a)+` +${res.pts}`;
+    if(mode==='NOWAY') return rnd(COM.noway_a)+` +${res.pts}`;
+    return rnd(COM.add2)+` +${res.pts}`;
+  }
   if(res.pts>=8) return rnd(COM.big)+` +${res.pts}`;
   return rnd(COM.run)+` +${res.pts}`;
 }
@@ -887,6 +920,8 @@ function hostBatBowl(id,choice){
   if(id!==m.tossWinner) return;
   m.batting=choice==='BAT'?id:(id===m.p1?m.p2:m.p1);
   m.bowling=m.batting===m.p1?m.p2:m.p1;
+  // Record who bats first — needed for TEST innings order
+  m.firstBatter=m.batting;
   sysMsg(`${pName(m.batting)} will bat first`);
   R.phase='match';
   m.phase='playing';
@@ -1058,39 +1093,158 @@ function hostResolveBall(){
 function endInnings(m){
   const batId=m.batting;
   m.innScores=m.innScores||{[m.p1]:[],[m.p2]:[]};
-  // Push the completed innings score ONCE here
+  // Push completed innings score ONCE
   m.innScores[batId].push(m.scores[batId]);
 
+  if(m.mode==='TEST'){
+    endTestInnings(m);
+  } else {
+    endStandardInnings(m);
+  }
+}
+
+// ── Standard (non-TEST) innings flow: 2 innings total ──
+function endStandardInnings(m){
+  const batId=m.batting;
   if(m.innings===1){
     const target=m.scores[batId];
     m.target=target;
     m.chase=true;
-    // swap roles
-    const prevBat=m.batting;
-    m.batting=m.bowling;
-    m.bowling=prevBat;
-    m.scores[m.batting]=0;
-    m.wickets[m.batting]=0;
-    m.balls=0;m.over=0;m.ballInOver=0;
-    m.ballLog=[];m.currentOver=[];
-    m.bowlerFigs={};m.currentBowler=m.bowling;
+    swapBatBowl(m);
     m.innings=2;
     m.phase='innings_break';
     sysMsg(`Innings break — Target: ${target+1} runs`);
     pushState();
     setTimeout(()=>{
-      if(R.settings.type==='team'){
-        setupTeamBowler(m);
-      } else {
-        m.phase='playing';
-        pushState();
-        hostStartBallTimer();
-      }
+      if(R.settings.type==='team') setupTeamBowler(m);
+      else { m.phase='playing'; pushState(); hostStartBallTimer(); }
     },3500);
   } else {
-    // innings 2 done — do NOT push again, already pushed above
     resolveMatchResult(m);
   }
+}
+
+// ── TEST innings flow: 4 innings, follow-on at 150 deficit ──
+// Innings order (firstBatter=A):  A inn1 → B inn1 → A inn2 → B inn2(chase)
+// With follow-on enforced:        A inn1 → B inn1 → B inn2 → A inn2(chase)
+function endTestInnings(m){
+  const ti=m.testInning; // 1,2,3,4
+  m.testInning=(m.testInning||1)+1;
+  const A=m.firstBatter;
+  const B=A===m.p1?m.p2:m.p1;
+
+  if(ti===1){
+    // A's 1st innings done → B bats inn1
+    sysMsg(`${pName(A)} scored ${m.scores[A]} in 1st innings. ${pName(B)} to bat.`);
+    m.phase='innings_break';
+    pushState();
+    setTimeout(()=>{ startTestInning(m, B, A, null); },3500);
+
+  } else if(ti===2){
+    // B's 1st innings done → check follow-on
+    const aScore=(m.innScores[A]||[])[0]||0;
+    const bScore=(m.innScores[B]||[])[0]||0;
+    const deficit=aScore-bScore;
+    sysMsg(`${pName(B)} scored ${bScore}. Deficit: ${deficit} runs.`);
+
+    if(deficit>=150){
+      // Follow-on threshold reached — host (A's side) decides
+      // In multiplayer, the host decides automatically (or we let the batting-first player decide)
+      // We'll auto-enforce follow-on (classic Test cricket default) and notify
+      m.followOnEnforced=true;
+      sysMsg(`Follow-on enforced! ${pName(B)} must bat again.`);
+      m.phase='innings_break';
+      pushState();
+      setTimeout(()=>{ startTestInning(m, B, A, null); },3500);
+    } else {
+      // No follow-on → A bats their 2nd innings
+      m.phase='innings_break';
+      pushState();
+      setTimeout(()=>{ startTestInning(m, A, B, null); },3500);
+    }
+
+  } else if(ti===3){
+    if(m.followOnEnforced){
+      // B just completed follow-on innings → check win by innings
+      const aTotal=(m.innScores[A]||[]).reduce((s,v)=>s+v,0);
+      const bTotal=(m.innScores[B]||[]).reduce((s,v)=>s+v,0);
+      if(aTotal>bTotal){
+        const margin=`${pName(A)} WON BY AN INNINGS AND ${aTotal-bTotal} RUNS`;
+        sysMsg(margin);
+        m.result={winner:A,s1:(m.innScores[m.p1]||[]).reduce((s,v)=>s+v,0),s2:(m.innScores[m.p2]||[]).reduce((s,v)=>s+v,0),margin,p1:m.p1,p2:m.p2};
+        m.phase='result';
+        pushState();
+        setTimeout(()=>{ finaliseResult(m); },4000);
+        return;
+      }
+      // A still needs to bat → target = B_total - A_inn1
+      const aInn1=(m.innScores[A]||[])[0]||0;
+      const target=Math.max(0, bTotal - aInn1);
+      sysMsg(`${pName(A)} need ${target+1} to win.`);
+      m.phase='innings_break';
+      pushState();
+      setTimeout(()=>{ startTestInning(m, A, B, target); },3500);
+    } else {
+      // A just completed their 2nd innings → B chases
+      const aTotal=(m.innScores[A]||[]).reduce((s,v)=>s+v,0);
+      const bInn1=(m.innScores[B]||[])[0]||0;
+      const target=Math.max(0, aTotal - bInn1);
+      sysMsg(`${pName(B)} need ${target+1} to win.`);
+      m.phase='innings_break';
+      pushState();
+      setTimeout(()=>{ startTestInning(m, B, A, target); },3500);
+    }
+
+  } else {
+    // ti===4: final innings done → result
+    resolveMatchResult(m);
+  }
+}
+
+// Helper: reset match state for next TEST innings
+function startTestInning(m, newBatter, newBowler, chase){
+  m.batting=newBatter;
+  m.bowling=newBowler;
+  m.scores[newBatter]=0;
+  m.wickets[newBatter]=0;
+  m.balls=0; m.over=0; m.ballInOver=0;
+  m.ballLog=[]; m.currentOver=[];
+  m.bowlerFigs={}; m.currentBowler=newBowler;
+  m.target=chase;
+  m.chase=chase!==null;
+  m.innings= m.innings===1 ? 2 : m.innings; // keep innings count for display
+  m.phase='playing';
+  pushState();
+  if(R.settings.type==='team') setupTeamBowler(m);
+  else hostStartBallTimer();
+}
+
+// Helper: swap batting/bowling and reset for standard innings 2
+function swapBatBowl(m){
+  const prevBat=m.batting;
+  m.batting=m.bowling;
+  m.bowling=prevBat;
+  m.scores[m.batting]=0;
+  m.wickets[m.batting]=0;
+  m.balls=0; m.over=0; m.ballInOver=0;
+  m.ballLog=[]; m.currentOver=[];
+  m.bowlerFigs={}; m.currentBowler=m.bowling;
+}
+
+// Finalise result after win-by-innings early end
+function finaliseResult(m){
+  const sched=R.schedule.find(s=>s.id===R.currentMatchId);
+  if(sched){
+    sched.done=true; sched.winner=m.result.winner;
+    sched.s1=m.result.s1; sched.s2=m.result.s2;
+  }
+  R.lastResult={...m.result, mode:m.mode||''};
+  R.phase='mresult';
+  R.currentMatchId=null; R.match=null;
+  applyTheme('');
+  const pending=R.schedule.filter(s=>!s.done&&s.p1!=='TBD'&&s.p2!=='TBD');
+  if(pending.length===0) checkTournamentEnd();
+  pushState();
 }
 
 function resolveMatchResult(m){
@@ -1281,8 +1435,11 @@ function launchNextMatch(){
   R.match={
     id:next.id,p1:next.p1,p2:next.p2,mode,
     pool:MODE_POOL[mode]||MODE_POOL.NORMAL,
-    phase:'waiting',// waiting → playing → reveal → innings_break → result
+    phase:'waiting',
     innings:1,batting:null,bowling:null,
+    // TEST mode: tracks all 4 innings separately
+    testInning:1,      // 1–4, only used when mode==='TEST'
+    youBatFirst:null,  // set at toss; determines innings order for TEST
     scores:{[next.p1]:0,[next.p2]:0},
     wickets:{[next.p1]:0,[next.p2]:0},
     innScores:{[next.p1]:[],[next.p2]:[]},
@@ -1296,6 +1453,7 @@ function launchNextMatch(){
     target:null,chase:false,result:null,
     tossWinner:null,tossResult:null,
     lastBat:null,lastBowl:null,lastRes:null,
+    followOnEnforced:false,
   };
   R.pendingEntry={p1Ready:false,p2Ready:false};
   R.phase='entry';
@@ -1554,7 +1712,22 @@ function renderMatch(){
   if(!batId||!bowlId) return;
 
   document.getElementById('mph-title').textContent=`${escH(pName(m.p1))} vs ${escH(pName(m.p2))}`;
-  document.getElementById('mph-sub').textContent=`${m.mode} · INNINGS ${m.innings} · ${(m.phase||'').toUpperCase()}`;
+  // Build innings label
+  let innLabel='';
+  if(m.mode==='TEST'){
+    const ti=m.testInning||1;
+    const A=m.firstBatter, B=A===m.p1?m.p2:m.p1;
+    const innNames=['','1ST INNINGS','2ND INNINGS','3RD INNINGS','4TH INNINGS'];
+    const batter=m.batting;
+    const whichSide=batter===A?pName(A):pName(B);
+    const sideInn=batter===A
+      ? ((m.innScores[A]||[]).length===0?'1ST':'2ND')
+      : ((m.innScores[B]||[]).length===0?'1ST':'2ND');
+    innLabel=`TEST · ${escH(whichSide)} ${sideInn} INNINGS · INN ${ti}/4`;
+  } else {
+    innLabel=`${m.mode} · INNINGS ${m.innings}`;
+  }
+  document.getElementById('mph-sub').textContent=`${innLabel} · ${(m.phase||'').toUpperCase()}`;
 
   const svBat=document.getElementById('sv-bat');
   const svBowl=document.getElementById('sv-bowl');
@@ -1567,6 +1740,9 @@ function renderMatch(){
 
   const maxB=R.settings.balls;
   document.getElementById('over-info').textContent=`OVER ${(m.over||0)+1} · BALL ${(m.ballInOver||0)+1}${maxB?` · ${maxB-m.balls} LEFT`:''}`;
+
+  // TEST innings tracker
+  renderTestTracker(m);
 
   // ball pips
   const bl=m.ballLog||[];
@@ -1586,7 +1762,26 @@ function renderMatch(){
   const ibb=document.getElementById('innings-break-banner');
   if(ibb){
     ibb.style.display=m.phase==='innings_break'?'block':'none';
-    if(m.phase==='innings_break') document.getElementById('inn-break-txt').textContent=`Target: ${(m.target||0)+1} runs`;
+    if(m.phase==='innings_break'){
+      const ibtEl=document.getElementById('inn-break-txt');
+      if(m.mode==='TEST'){
+        const A=m.firstBatter, B=A===m.p1?m.p2:m.p1;
+        const aScores=m.innScores[A]||[], bScores=m.innScores[B]||[];
+        const ti=m.testInning||1;
+        if(ti===2){
+          ibtEl.textContent=`${pName(A)}: ${aScores[0]??'—'} · ${pName(B)} to bat`;
+        } else if(ti===3){
+          const deficit=(aScores[0]||0)-(bScores[0]||0);
+          ibtEl.textContent=deficit>=150?`Follow-on! ${pName(B)} bats again (deficit: ${deficit})`:`${pName(A)} leads. ${pName(A)} bats 2nd innings`;
+        } else if(ti===4){
+          const aTotal=aScores.reduce((s,v)=>s+v,0);
+          const bTotal=bScores.reduce((s,v)=>s+v,0);
+          ibtEl.textContent=`Target: ${m.target!==null?m.target+1:'?'} · ${pName(m.batting)} to bat`;
+        }
+      } else {
+        ibtEl.textContent=`Target: ${(m.target||0)+1} runs`;
+      }
+    }
   }
 
   // Player numpad vs spectator
@@ -1642,6 +1837,61 @@ function renderMatch(){
         </div>`;
       }).join('');
     }
+  }
+}
+
+function renderTestTracker(m){
+  const el=document.getElementById('test-inn-tracker');
+  const rows=document.getElementById('test-inn-rows');
+  if(!el||!rows) return;
+  if(m.mode!=='TEST'||!m.firstBatter){ el.style.display='none'; return; }
+  el.style.display='block';
+
+  const A=m.firstBatter, B=A===m.p1?m.p2:m.p1;
+  const aS=m.innScores[A]||[], bS=m.innScores[B]||[];
+  const ti=m.testInning||1;
+
+  // Build 4-row tracker
+  // Normal order: A inn1, B inn1, A inn2, B inn2
+  // Follow-on order: A inn1, B inn1, B inn2, A inn2
+  let order;
+  if(m.followOnEnforced){
+    order=[
+      {label:`${pName(A)} 1ST INNINGS`, val:aS[0], idx:0, side:'A'},
+      {label:`${pName(B)} 1ST INNINGS`, val:bS[0], idx:1, side:'B'},
+      {label:`${pName(B)} 2ND INNINGS (FOLLOW-ON)`, val:bS[1], idx:2, side:'B'},
+      {label:`${pName(A)} 2ND INNINGS`, val:aS[1], idx:3, side:'A'},
+    ];
+  } else {
+    order=[
+      {label:`${pName(A)} 1ST INNINGS`, val:aS[0], idx:0, side:'A'},
+      {label:`${pName(B)} 1ST INNINGS`, val:bS[0], idx:1, side:'B'},
+      {label:`${pName(A)} 2ND INNINGS`, val:aS[1], idx:2, side:'A'},
+      {label:`${pName(B)} 2ND INNINGS`, val:bS[1], idx:3, side:'B'},
+    ];
+  }
+
+  // Determine which row is active (first undone one)
+  let activeSet=false;
+  rows.innerHTML=order.map((r,i)=>{
+    const done=r.val!==undefined;
+    let cls='inn-row';
+    if(done) cls+=' done';
+    else if(!activeSet){ cls+=' active'; activeSet=true; }
+    const score=done?r.val:'—';
+    return `<div class="${cls}"><span>${escH(r.label)}</span><span>${score}</span></div>`;
+  }).join('');
+
+  // Running totals
+  const aTotal=aS.reduce((s,v)=>s+v,0);
+  const bTotal=bS.reduce((s,v)=>s+v,0);
+  if(aS.length>0||bS.length>0){
+    rows.innerHTML+=`<div class="inn-row" style="border-top:1px solid var(--accent);margin-top:4px;padding-top:4px">
+      <span style="color:var(--accent)">${escH(pName(A))} TOTAL</span><span style="color:var(--accent)">${aTotal}</span>
+    </div>
+    <div class="inn-row">
+      <span style="color:var(--accent)">${escH(pName(B))} TOTAL</span><span style="color:var(--accent)">${bTotal}</span>
+    </div>`;
   }
 }
 
