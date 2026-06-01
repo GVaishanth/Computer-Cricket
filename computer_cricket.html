@@ -521,61 +521,61 @@ function show(id){
 // ── THEMES ──
 // Each theme overrides the CSS custom properties on :root
 const THEMES={
-  // Afghanistan: midnight navy + red + gold stripe
+  // Afghanistan: Navy Blue · Red · Black  (T20 WC 2024 jersey)
   HOME:{
     '--felt':'#05091a','--panel':'#090e28','--pitch':'#0a0f2e','--pitch-mid':'#0d1438','--pitch-light':'#101a48',
     '--border':'#1e2a6a','--led-off':'#06091c',
     '--amber':'#d32011','--amber-dim':'#7a1209','--amber-bright':'#ff4433',
-    '--chalk':'#e8e4d4','--chalk-dim':'#9090a8','--green-neon':'#ffd700','--blue':'#3a7bd5',
+    '--chalk':'#e8e4d4','--chalk-dim':'#9090a8','--green-neon':'#1a6ad5','--blue':'#1a6ad5',
   },
-  // New Zealand: black + silver/white (ABs style)
+  // New Zealand: Black · White · Silver  (All Blacks palette)
   NORMAL:{
-    '--felt':'#0a0a0a','--panel':'#111111','--pitch':'#161616','--pitch-mid':'#1c1c1c','--pitch-light':'#242424',
-    '--border':'#333333','--led-off':'#080808',
-    '--amber':'#d4d4d4','--amber-dim':'#666666','--amber-bright':'#ffffff',
-    '--chalk':'#e8e8e8','--chalk-dim':'#888888','--green-neon':'#cccccc','--blue':'#aaaaaa',
+    '--felt':'#050505','--panel':'#0d0d0d','--pitch':'#111111','--pitch-mid':'#161616','--pitch-light':'#1c1c1c',
+    '--border':'#2e2e2e','--led-off':'#080808',
+    '--amber':'#e8e8e8','--amber-dim':'#666666','--amber-bright':'#ffffff',
+    '--chalk':'#f0f0f0','--chalk-dim':'#888888','--green-neon':'#c0c0c0','--blue':'#a0a0a0',
   },
-  // Australia: dark green + gold
+  // Australia: Gold · Green · Dark Navy  (classic baggy green + gold)
   CRAZY:{
-    '--felt':'#002200','--panel':'#001a00','--pitch':'#002800','--pitch-mid':'#003000','--pitch-light':'#003a00',
-    '--border':'#1a4a00','--led-off':'#001200',
+    '--felt':'#001500','--panel':'#001c00','--pitch':'#002000','--pitch-mid':'#002600','--pitch-light':'#002c00',
+    '--border':'#1a4500','--led-off':'#000e00',
     '--amber':'#ffd700','--amber-dim':'#9a8000','--amber-bright':'#ffe84a',
-    '--chalk':'#e8e4d4','--chalk-dim':'#9e9a6c','--green-neon':'#ffe000','--blue':'#00c040',
+    '--chalk':'#e8e4d4','--chalk-dim':'#9e9a6c','--green-neon':'#ffd700','--blue':'#002f6c',
   },
-  // India: deep navy + saffron orange
+  // India: Royal Blue · Saffron · Green  (tricolour)
   INSANE:{
-    '--felt':'#020d24','--panel':'#030f2e','--pitch':'#041238','--pitch-mid':'#061642','--pitch-light':'#081a50',
-    '--border':'#0d2860','--led-off':'#020a1a',
+    '--felt':'#020c20','--panel':'#031228','--pitch':'#041530','--pitch-mid':'#051838','--pitch-light':'#071c44',
+    '--border':'#0a2255','--led-off':'#020a1a',
     '--amber':'#ff6b00','--amber-dim':'#994000','--amber-bright':'#ff9500',
-    '--chalk':'#e8e4d4','--chalk-dim':'#9e9a7c','--green-neon':'#138808','--blue':'#ffffff',
+    '--chalk':'#e8e4d4','--chalk-dim':'#9e9a7c','--green-neon':'#138808','--blue':'#4169e1',
   },
-  // West Indies: deep maroon + gold
+  // West Indies: Maroon · Gold · Black  (WI cricket heritage)
   MAD:{
-    '--felt':'#200010','--panel':'#1a000c','--pitch':'#280014','--pitch-mid':'#32001a','--pitch-light':'#3c0020',
-    '--border':'#5a0030','--led-off':'#140008',
+    '--felt':'#0f0005','--panel':'#180008','--pitch':'#1e000a','--pitch-mid':'#26000e','--pitch-light':'#2e0012',
+    '--border':'#500020','--led-off':'#0a0004',
     '--amber':'#ffc300','--amber-dim':'#8a6b00','--amber-bright':'#ffe060',
-    '--chalk':'#f0e8dc','--chalk-dim':'#a09070','--green-neon':'#ff9500','--blue':'#4a90d9',
+    '--chalk':'#f0e8dc','--chalk-dim':'#a09070','--green-neon':'#ffc300','--blue':'#7b1c1c',
   },
-  // England: dark navy + bright red
+  // England: Navy · Red · White  (St George's Cross)
   NOWAY:{
-    '--felt':'#000d26','--panel':'#000b20','--pitch':'#001030','--pitch-mid':'#00133a','--pitch-light':'#001848',
-    '--border':'#002060','--led-off':'#00080a',
+    '--felt':'#000812','--panel':'#000b1c','--pitch':'#000e24','--pitch-mid':'#001130','--pitch-light':'#001540',
+    '--border':'#001a50','--led-off':'#000610',
     '--amber':'#cf0a2c','--amber-dim':'#7a0618','--amber-bright':'#ff3355',
-    '--chalk':'#e4e8f0','--chalk-dim':'#8090a8','--green-neon':'#ffffff','--blue':'#0033cc',
+    '--chalk':'#e8ecf4','--chalk-dim':'#8090a8','--green-neon':'#ffffff','--blue':'#003090',
   },
-  // South Africa: dark forest green + yellow
+  // South Africa: Green · Gold · Red  (Proteas)
   B10:{
-    '--felt':'#0d1e0d','--panel':'#0a1a0a','--pitch':'#102410','--pitch-mid':'#142c14','--pitch-light':'#183618',
-    '--border':'#1e4a1e','--led-off':'#081208',
+    '--felt':'#071007','--panel':'#0c1a0c','--pitch':'#101e10','--pitch-mid':'#142414','--pitch-light':'#182a18',
+    '--border':'#1a4518','--led-off':'#050e05',
     '--amber':'#ffb612','--amber-dim':'#8a6000','--amber-bright':'#ffce50',
-    '--chalk':'#e8e4d4','--chalk-dim':'#a09870','--green-neon':'#ffb612','--blue':'#e03a2e',
+    '--chalk':'#e8e4d4','--chalk-dim':'#a09870','--green-neon':'#007b40','--blue':'#e03a2e',
   },
-  // Classic Whites: cream/parchment bg, dark navy text, sepia
+  // Classic Whites: Cream · Navy · Sepia  (Test match whites)
   TEST:{
-    '--felt':'#f0ead8','--panel':'#e8e0c8','--pitch':'#ddd8c0','--pitch-mid':'#d4ccb0','--pitch-light':'#ccc4a8',
-    '--border':'#b8b098','--led-off':'#c8c0a8',
+    '--felt':'#f5eed8','--panel':'#ede5cc','--pitch':'#e4dcc0','--pitch-mid':'#dbd3b4','--pitch-light':'#d2caa8',
+    '--border':'#c8bfa0','--led-off':'#ddd5be',
     '--amber':'#1a3a5c','--amber-dim':'#4a6a8c','--amber-bright':'#0a2040',
-    '--chalk':'#1a1a1a','--chalk-dim':'#4a4a4a','--green-neon':'#1a4a1a','--blue':'#1a1a6a',
+    '--chalk':'#1a1a2a','--chalk-dim':'#5a5a6a','--green-neon':'#1a4a1a','--blue':'#8b1a1a',
   },
 };
 
