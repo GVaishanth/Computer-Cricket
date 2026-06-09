@@ -1474,18 +1474,18 @@ body.in-game .top-bar{display:block;}
 
 /* ── Progression toasts (XP gained / level-up / skill unlocked / task done) ── */
 .prog-toast{
-  position:fixed;left:50%;bottom:16px;transform:translateX(-50%);
+  position:fixed;right:16px;bottom:16px;transform:none;
   z-index:1700;background:linear-gradient(160deg,#0d1830,#070d1c);
   border:1.5px solid #2a3a5a;border-radius:10px;padding:10px 18px;
   font-family:'Rajdhani',sans-serif;color:#cfd6e3;
   display:flex;align-items:center;gap:10px;
   box-shadow:0 8px 28px rgba(0,0,0,0.55),0 0 14px rgba(245,166,35,0.18);
-  opacity:0;transform:translate(-50%, 20px);
+  opacity:0;transform:translateY(20px);
   animation:progToastIn 0.35s cubic-bezier(0.22,1,0.36,1) forwards;
   transition:opacity 0.35s, transform 0.35s;
   max-width:90vw;
 }
-@keyframes progToastIn{to{opacity:1;transform:translate(-50%, 0);}}
+@keyframes progToastIn{to{opacity:1;transform:translateY(0);}}
 .prog-toast .pt-ico{font-size:20px;line-height:1;}
 .prog-toast .pt-amt{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:#ffd060;}
 .prog-toast .pt-lvl{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:3px;color:#c89cff;}
@@ -1977,6 +1977,7 @@ body[data-mode="TEST"]:not(.cc-no-modefx){
 <div class="header">
   <h1>THE NETS</h1>
   <div class="subtitle" id="sp_subtitle">YOU vs CPU</div>
+  <div class="so-top-badge" id="sp_so-top-badge" style="display:none"></div>
 </div>
 
 <!-- LUCK QUIZ -->
@@ -2042,7 +2043,7 @@ body[data-mode="TEST"]:not(.cc-no-modefx){
       <button class="action-btn primary" onclick="SP.callToss('HEADS')">HEADS</button>
       <button class="action-btn" onclick="SP.callToss('TAILS')">TAILS</button>
     </div>
-    <div class="action-row"><button class="action-btn back-btn" onclick="SP.goHome()">← MAIN MENU</button></div>
+    <div class="action-row"><button class="action-btn back-btn" onclick="SP.goHome()">← MAIN MENU</button><button class="action-btn season-live-hub" style="display:none" onclick="SP.openSeasonHub()">📜 SEASON HUB</button></div>
   </div>
 </div>
 
@@ -2055,7 +2056,7 @@ body[data-mode="TEST"]:not(.cc-no-modefx){
       <button class="action-btn primary" onclick="SP.chooseBatBowl('BAT')">BAT FIRST</button>
       <button class="action-btn" onclick="SP.chooseBatBowl('BOWL')">BOWL FIRST</button>
     </div>
-    <div class="action-row"><button class="action-btn back-btn" onclick="SP.goHome()">← MAIN MENU</button></div>
+    <div class="action-row"><button class="action-btn back-btn" onclick="SP.goHome()">← MAIN MENU</button><button class="action-btn season-live-hub" style="display:none" onclick="SP.openSeasonHub()">📜 SEASON HUB</button></div>
   </div>
 </div>
 
@@ -2169,17 +2170,56 @@ body[data-mode="TEST"]:not(.cc-no-modefx){
     </div>
   </div>
 
-  <!-- TEST mode: end-of-day prompt (continue / declare) -->
-  <div class="follow-on-box" id="sp_test-day-box" style="display:none">
-    <h4 id="sp_test-day-title">END OF DAY 1</h4>
-    <p id="sp_test-day-text"></p>
-    <div class="action-row" id="sp_test-day-actions">
-      <button class="action-btn primary" id="sp_test-continue-btn" onclick="SP.testContinueDay()">PLAY ON TO NEXT DAY</button>
-      <button class="action-btn" id="sp_test-declare-btn" onclick="SP.testDeclare()" style="display:none">DECLARE INNINGS</button>
-    </div>
-  </div>
   <div class="action-row" style="margin-top:6px">
     <button class="action-btn back-btn" onclick="SP.goHome()">← MAIN MENU</button>
+    <button class="action-btn season-live-hub" style="display:none" onclick="SP.openSeasonHub()">📜 SEASON HUB</button>
+  </div>
+  <div class="action-row" id="sp_test-live-declare-row" style="margin-top:6px;display:none">
+    <button class="action-btn" onclick="SP.testDeclare()">DECLARE INNINGS</button>
+  </div>
+</div>
+
+<!-- TEST DAY LANDING -->
+<div id="sp_screen-testday" class="screen">
+  <div class="inn-summary" style="max-width:520px;margin:0 auto 14px">
+    <div class="section-title" id="sp_td-kicker">TEST MATCH</div>
+    <h2 id="sp_td-title" style="font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:4px;color:var(--amber);margin-bottom:8px">END OF DAY</h2>
+    <p id="sp_td-text" style="font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.7;color:var(--chalk);margin-bottom:14px"></p>
+    <div class="result-scores" style="margin-bottom:14px">
+      <div class="result-score-side">
+        <div class="rs-label">YOU</div>
+        <div class="rs-val" id="sp_td-you">0</div>
+        <div class="rs-wkts" id="sp_td-you-sub"></div>
+      </div>
+      <div class="result-score-side">
+        <div class="rs-label">CPU</div>
+        <div class="rs-val" id="sp_td-cpu">0</div>
+        <div class="rs-wkts" id="sp_td-cpu-sub"></div>
+      </div>
+    </div>
+    <div class="action-row" id="sp_td-actions">
+      <button class="action-btn primary" id="sp_td-continue-btn" onclick="SP.testContinueDay()">CONTINUE BATTING</button>
+      <button class="action-btn" id="sp_td-declare-btn" onclick="SP.testDeclare()">DECLARE INNINGS</button>
+    </div>
+  </div>
+</div>
+
+<!-- PLAYOFF TIEBREAK -->
+<div id="sp_screen-season-tiebreak" class="screen">
+  <div class="tb-epic-card">
+    <div class="tb-kicker">PLAYOFF TIEBREAKER</div>
+    <h2 id="sp_tb-title">THE VERDICT</h2>
+    <div class="tb-heavy" id="sp_tb-heavy">COUNTBACK</div>
+    <p id="sp_tb-sub" class="tb-sub"></p>
+    <table class="tb-table">
+      <thead><tr><th>MEASURE</th><th id="sp_tb-you-name">YOU</th><th id="sp_tb-cpu-name">CPU</th></tr></thead>
+      <tbody id="sp_tb-body"></tbody>
+    </table>
+    <div class="tb-winner" id="sp_tb-winner"></div>
+    <div class="action-row">
+      <button class="action-btn primary" onclick="SP.openSeasonHub()">📜 RETURN TO HUB</button>
+      <button class="action-btn" onclick="SP.goHome()">MAIN MENU</button>
+    </div>
   </div>
 </div>
 
@@ -2413,7 +2453,13 @@ function show(id){
   const el = document.getElementById('sp_screen-'+id);
   if(el) el.classList.add('active');
   // Hide win-probability bar + match-state strip outside the live game screen
+  try{
+    document.querySelectorAll('#sp-root .season-live-hub').forEach(btn=>{
+      btn.style.display = (window.__seasonLaunched && window.Season && Season.active && Season.active()) ? 'inline-block' : 'none';
+    });
+  }catch(_){}
   if(id !== 'game'){
+    try{ const d=document.getElementById('sp_test-live-declare-row'); if(d) d.style.display='none'; }catch(_){}
     const w = document.getElementById('sp_wpb');
     if(w) w.classList.add('wpb-hidden');
     const ms = document.getElementById('sp_msstrip');
@@ -2504,7 +2550,18 @@ function applyTheme(themeKey){
 }
 
 function goHome(){
+  // During a launched Season fixture, "back" should not strand the user on
+  // the generic Nets menu. Send them to the Season hub; the separate Home
+  // button still exists outside the fixture flow.
+  try{
+    if(window.__seasonLaunched && window.Season && Season.active && Season.active()){
+      window.__seasonLaunched = null;
+      openSeasonHub();
+      return;
+    }
+  }catch(_){}
   window.__seasonLaunched=null;
+  try{ window.clearSuperOverTopBadge && window.clearSuperOverTopBadge(); }catch(_){}
   applyTheme('HOME');
   show('mode');
   renderModeSelect();
@@ -2615,6 +2672,8 @@ function beginGame(mode){
   G.mode=mode; G.difficulty=difficulty;
   G.yourInnings=[]; G.cpuInnings=[];
   G.yourWkts=[];    G.cpuWkts=[];
+  if(G._testAutoTimer){ try{ clearTimeout(G._testAutoTimer); }catch(_){} G._testAutoTimer=null; }
+  G._testTotalDaysUsed=0; G._testBallsThisDay=0; G._testDay=1; G._testForceDraw=false;
   G.followOnEnforced=false; G.youBatFirst=true; G.innBreakCallback=null;
   applyTheme(mode);
   show('toss');
@@ -2655,11 +2714,21 @@ function startInning(youBat,chase){
   G.inputLocked=false; G.selectedNum=null; G.inningClosing=false;
   G.lastNum=null; G.repeatCount=0; G.ballLog=[];
   G._wicketsFallen=0; // multi-wicket counter resets each innings
-  // TEST: reset per-innings day counters (day 1, no balls this day yet)
-  G._testDay = 1;
-  G._testBallsThisDay = 0;
-  // Total days elapsed across the match (capped at 5)
-  if(typeof G._testTotalDaysUsed !== 'number') G._testTotalDaysUsed = 0;
+  // TEST: day counters are MATCH-wide, not innings-wide. If an innings
+  // ends mid-day, the next innings continues the same match day instead of
+  // printing another "Day 1".
+  if(G.mode==='TEST'){
+    if(typeof G._testTotalDaysUsed !== 'number') G._testTotalDaysUsed = 0;
+    if(typeof G._testBallsThisDay !== 'number') G._testBallsThisDay = 0;
+    if(typeof G._maxBalls === 'number' && G._maxBalls > 0 && G._testBallsThisDay >= G._maxBalls){
+      G._testBallsThisDay = 0;
+    }
+    G._testDay = testMatchDay();
+  } else {
+    G._testDay = 1;
+    G._testBallsThisDay = 0;
+    if(typeof G._testTotalDaysUsed !== 'number') G._testTotalDaysUsed = 0;
+  }
   G._testDeclared = false;
   window.__spWpbLast = undefined; // reset WPB swing tracker
   // Clean up any leftover FX particles from a previous innings
@@ -2677,12 +2746,17 @@ function startInning(youBat,chase){
   document.getElementById('sp_follow-on-box').style.display='none';
   updateInningsTracker(); resetDisplayNumbers(); resetBallLog(); buildNumpad();
 
-  const innNum=G.yourInnings.length+G.cpuInnings.length+1;
+  const innNum=G.mode==='TEST'?testInningsNo():(G.yourInnings.length+G.cpuInnings.length+1);
   document.getElementById('sp_badge-mode').textContent=G.mode;
-  document.getElementById('sp_badge-phase').textContent=(youBat?'BATTING':'BOWLING')+' · INN '+innNum;
+  document.getElementById('sp_badge-phase').textContent=(youBat?'BATTING':'BOWLING')+' · INN '+innNum+(G.mode==='TEST'?'/4':'');
   document.getElementById('sp_badge-diff').textContent=G.difficulty;
-  document.getElementById('sp_score-label-you').textContent=youBat?'YOUR SCORE':'BALLS BOWLED';
-  document.getElementById('sp_score-label-cpu').textContent=youBat?'BALLS BOWLED':'CPU SCORE';
+  if(G.mode==='TEST'){
+    document.getElementById('sp_score-label-you').textContent='YOUR TOTAL';
+    document.getElementById('sp_score-label-cpu').textContent='CPU TOTAL';
+  } else {
+    document.getElementById('sp_score-label-you').textContent=youBat?'YOUR SCORE':'BALLS BOWLED';
+    document.getElementById('sp_score-label-cpu').textContent=youBat?'BALLS BOWLED':'CPU SCORE';
+  }
   document.getElementById('sp_score-sub-you').textContent='';
   document.getElementById('sp_score-sub-cpu').textContent='';
   // Show TARGET if chasing, otherwise wickets-remaining (when >1 wicket configured)
@@ -2700,6 +2774,15 @@ function startInning(youBat,chase){
 function updateScoreboardFull(){
   const yd=G.yourInnings.reduce((a,b)=>a+b,0);
   const cd=G.cpuInnings.reduce((a,b)=>a+b,0);
+  if(G.mode==='TEST'){
+    document.getElementById('sp_score-label-you').textContent='YOUR TOTAL';
+    document.getElementById('sp_score-label-cpu').textContent='CPU TOTAL';
+    document.getElementById('sp_score-you').textContent=yd + (G.batting ? G.score : 0);
+    document.getElementById('sp_score-cpu').textContent=cd + (G.batting ? 0 : G.score);
+    document.getElementById('sp_score-sub-you').textContent='';
+    document.getElementById('sp_score-sub-cpu').textContent='';
+    return;
+  }
   if(G.batting){
     document.getElementById('sp_score-you').textContent=yd+G.score;
     document.getElementById('sp_score-cpu').textContent=G.balls;
@@ -2713,6 +2796,13 @@ function updateScoreboardFull(){
   }
 }
 function updateLiveStats(){
+  try{
+    const liveDeclare = document.getElementById('sp_test-live-declare-row');
+    if(liveDeclare) liveDeclare.style.display = (G.mode==='TEST' && G.batting && !G._superOver) ? 'flex' : 'none';
+    document.querySelectorAll('#sp-root .season-live-hub').forEach(btn=>{
+      btn.style.display = (window.__seasonLaunched && window.Season && Season.active && Season.active()) ? 'inline-block' : 'none';
+    });
+  }catch(_){}
   // G.score/G.balls always belong to whoever is BATTING this innings —
   // so the run-rate chip stays meaningful whether you bat or bowl.
   const rr = G.balls>0 ? (G.score/G.balls).toFixed(2) : '—';
@@ -2755,20 +2845,26 @@ function updateLiveStats(){
   if(G.mode==='TEST'){
     const phaseEl = document.getElementById('sp_badge-phase');
     if(phaseEl){
-      const innNum = G.yourInnings.length + G.cpuInnings.length + 1;
-      const day  = G._testDay || 1;
-      const used = G._testTotalDaysUsed || 0;
+      const innNum = testInningsNo();
       const bpd  = (typeof G._maxBalls==='number' && G._maxBalls>0) ? G._maxBalls : 0;
-      const todayBalls = G._testBallsThisDay || 0;
+      const todayBalls = Math.min(G._testBallsThisDay || 0, bpd || (G._testBallsThisDay || 0));
+      const day  = (bpd>0 && todayBalls>=bpd)
+        ? Math.max(1, Math.min(TEST_MATCH_DAYS, G._testTotalDaysUsed || 1))
+        : testMatchDay();
       const dayInfo = bpd>0
-        ? `DAY ${day} · BALL ${todayBalls}/${bpd} · MATCH DAY ${used+ (todayBalls>0?1:0)}/${TEST_MATCH_DAYS}`
-        : `DAY ${day}`;
-      phaseEl.textContent = (G.batting?'BATTING':'BOWLING')+' · INN '+innNum+' · '+dayInfo;
+        ? `DAY ${day}/${TEST_MATCH_DAYS} · BALL ${todayBalls}/${bpd}`
+        : `DAY ${day}/${TEST_MATCH_DAYS}`;
+      phaseEl.textContent = (G.batting?'BATTING':'BOWLING')+' · INN '+innNum+'/4 · '+dayInfo;
     }
   }
   // ── Match-state strip (shows above the WPB) ──
   try{
-    if(window.MatchStrip){
+    // TEST already has the fixed match-day ball counter in the phase badge.
+    // Hide this strip in TEST because its innings-based balls-left text was a
+    // second counter and could reset at innings changes.
+    if(G.mode === 'TEST'){
+      if(window.MatchStrip) window.MatchStrip.hide('sp_msstrip');
+    } else if(window.MatchStrip){
       let _maxB = 0;
       if(G.mode==='B10') _maxB = 10;
       else if(typeof G._maxBalls==='number' && G._maxBalls>0) _maxB = G._maxBalls;
@@ -3039,6 +3135,8 @@ function processBall(playerNum){
   if(G.batting&&G.score>G.highScore){G.highScore=G.score;document.getElementById('sp_stat-highscore').textContent=G.highScore;}
   if(G.batting&&G.score>G.modeStats[G.mode].pb) G.modeStats[G.mode].pb=G.score;
 
+  const testDayEnded = noteTestBallProgress();
+
   updateScoreboardFull(); updateLiveStats();
 
   if(res.out){
@@ -3052,6 +3150,11 @@ function processBall(playerNum){
       showOutOverlay(G.score);
       setTimeout(()=>{
         hideOutOverlay();
+        if(testDayEnded){
+          G.inputLocked = true;
+          showTestDayEnd();
+          return;
+        }
         G.inningClosing=false;
         G.inputLocked=false;
         G.lastNum=null;
@@ -3073,20 +3176,11 @@ function processBall(playerNum){
   if(G.chase!==null&&G.score>G.chase){G.inningClosing=true;setTimeout(()=>{handleInnEnd();},400);return;}
   if(G.mode==='B10'&&G.balls>=10){G.inningClosing=true;setTimeout(()=>{handleInnEnd();},400);return;}
 
-  // ── TEST mode: balls-per-innings is interpreted as balls-per-DAY ──
-  // Match = 5 days total across all innings. After each day ends:
-  //   • Day 1 → must continue (no declare option)
-  //   • Day ≥2 → batting side may DECLARE or play on
-  //   • 5 days used → match drawn
-  if(G.mode==='TEST' && typeof G._maxBalls==='number' && G._maxBalls>0){
-    G._testBallsThisDay = (G._testBallsThisDay||0) + 1;
-    if(G._testBallsThisDay >= G._maxBalls){
-      // Day complete
-      G._testTotalDaysUsed = (G._testTotalDaysUsed||0) + 1;
-      G.inputLocked = true;
-      setTimeout(()=>{ showTestDayEnd(); }, 400);
-      return;
-    }
+  // ── TEST mode: balls setting is balls-per-match-day ──
+  if(testDayEnded){
+    G.inputLocked = true;
+    setTimeout(()=>{ showTestDayEnd(); }, 400);
+    return;
   }
   // Generic ball-limit (player-selected via Nets BALLS PER INNINGS picker)
   // — TEST mode skips this; it uses the per-day system above.
@@ -3237,53 +3331,96 @@ function proceedAfterFollowOn(){
 // In TEST mode the `_maxBalls` setting is interpreted as balls-per-day.
 // A match spans 5 days total. At each day-end:
 //   • If 5 days are used → match is drawn (innings unfinished totals stand)
-//   • Day 1 → just continue to day 2 (no declare yet)
-//   • Day ≥ 2 → batting side can DECLARE or play on
+//   • Every completed day opens the Test day landing page
+//   • If YOU are batting, choose DECLARE or CONTINUE BATTING
 const TEST_MATCH_DAYS = 5;
+function testMatchDay(){
+  return Math.min(TEST_MATCH_DAYS, (G._testTotalDaysUsed || 0) + 1);
+}
+function testInningsNo(){
+  return Math.min(4, (G.yourInnings||[]).length + (G.cpuInnings||[]).length + 1);
+}
+function noteTestBallProgress(){
+  if(G.mode !== 'TEST' || !(typeof G._maxBalls === 'number' && G._maxBalls > 0)) return false;
+  G._testBallsThisDay = (G._testBallsThisDay || 0) + 1;
+  if(G._testBallsThisDay >= G._maxBalls){
+    G._testTotalDaysUsed = Math.min(TEST_MATCH_DAYS, (G._testTotalDaysUsed || 0) + 1);
+    G._testDay = Math.max(1, Math.min(TEST_MATCH_DAYS, G._testTotalDaysUsed));
+    return true;
+  }
+  G._testDay = testMatchDay();
+  return false;
+}
 function showTestDayEnd(){
-  const box   = document.getElementById('sp_test-day-box');
-  const title = document.getElementById('sp_test-day-title');
-  const text  = document.getElementById('sp_test-day-text');
-  const declareBtn = document.getElementById('sp_test-declare-btn');
-  const contBtn    = document.getElementById('sp_test-continue-btn');
-  if(!box) { handleInnEnd(); return; }
   const used = G._testTotalDaysUsed||0;
-  const day  = G._testDay||1;
-  title.textContent = `END OF DAY ${day} · MATCH DAY ${used}/${TEST_MATCH_DAYS}`;
-  const innNum = G.yourInnings.length + G.cpuInnings.length + 1;
-  text.innerHTML = `<strong>${G.batting?'YOU':'CPU'}</strong> are on <strong>${G.score}/${G._wicketsFallen||0}</strong> after day ${day} of innings ${innNum}.`;
-  // Match drawn if 5 days used
+  const endedDay = Math.max(1, Math.min(TEST_MATCH_DAYS, used));
+  const innNum = testInningsNo();
+  const yTotal = (G.yourInnings||[]).reduce((a,b)=>a+b,0) + (G.batting ? G.score : 0);
+  const cTotal = (G.cpuInnings ||[]).reduce((a,b)=>a+b,0) + (G.batting ? 0 : G.score);
+  const yW = (G.yourWkts||[]).reduce((a,b)=>a+b,0) + (G.batting ? (G._wicketsFallen||0) : 0);
+  const cW = (G.cpuWkts ||[]).reduce((a,b)=>a+b,0) + (G.batting ? 0 : (G._wicketsFallen||0));
+  const maxW = (typeof G._maxWickets==='number' && G._maxWickets>0) ? G._maxWickets : 1;
+
+  // Prefer the dedicated Test day landing page. Keep the old inline box as a
+  // fallback in case an older saved DOM is loaded.
+  const landing = document.getElementById('sp_screen-testday');
+  const title = document.getElementById('sp_td-title') || document.getElementById('sp_test-day-title');
+  const text  = document.getElementById('sp_td-text')  || document.getElementById('sp_test-day-text');
+  const youEl = document.getElementById('sp_td-you');
+  const cpuEl = document.getElementById('sp_td-cpu');
+  const youSub = document.getElementById('sp_td-you-sub');
+  const cpuSub = document.getElementById('sp_td-cpu-sub');
+  const contBtn = document.getElementById('sp_td-continue-btn') || document.getElementById('sp_test-continue-btn');
+  const declareBtn = document.getElementById('sp_td-declare-btn') || document.getElementById('sp_test-declare-btn');
+  const actions = document.getElementById('sp_td-actions') || document.getElementById('sp_test-day-actions');
+
+  if(title) title.textContent = `END OF MATCH DAY ${endedDay}/${TEST_MATCH_DAYS}`;
+  if(text){
+    const side = G.batting ? 'YOU' : 'CPU';
+    const status = used >= TEST_MATCH_DAYS
+      ? 'All 5 match days are complete.'
+      : (G.batting ? 'Declare now or continue batting on the next match day.' : 'CPU innings will continue automatically.');
+    text.innerHTML = `<strong>${side}</strong> are <strong>${G.score}/${G._wicketsFallen||0}</strong> in innings <strong>${innNum}/4</strong>.<br>${status}`;
+  }
+  if(youEl) youEl.textContent = yTotal;
+  if(cpuEl) cpuEl.textContent = cTotal;
+  if(youSub) youSub.textContent = `${yW}/${maxW * Math.max(1,(G.yourInnings||[]).length + (G.batting?1:0))} wkts`;
+  if(cpuSub) cpuSub.textContent = `${cW}/${maxW * Math.max(1,(G.cpuInnings||[]).length + (!G.batting?1:0))} wkts`;
+
   if(used >= TEST_MATCH_DAYS){
-    contBtn.style.display = 'none';
-    declareBtn.style.display = 'none';
-    text.innerHTML += '<br><br><span style="color:var(--amber)">All 5 match days used — match drawn.</span>';
-    box.style.display='block';
+    if(actions) actions.style.display = 'none';
+    if(landing) show('testday');
+    else { const box = document.getElementById('sp_test-day-box'); if(box) box.style.display='block'; }
     setTimeout(()=>{
-      box.style.display='none';
-      // Force end of all innings → final result
+      const box = document.getElementById('sp_test-day-box'); if(box) box.style.display='none';
       G._testForceDraw = true;
       finalTestResult();
     }, 2400);
     return;
   }
-  // Declare available from day 2 onwards (i.e. after at least one day batted)
-  if(day >= 2 && G.batting){
-    declareBtn.style.display = 'inline-block';
-  } else {
-    declareBtn.style.display = 'none';
-  }
-  // CPU "declare" — CPU never declares; auto-continue after a short pause when bowling
-  if(!G.batting){
+
+  if(actions) actions.style.display = 'flex';
+  if(contBtn){
     contBtn.style.display = 'inline-block';
-    declareBtn.style.display = 'none';
-    box.style.display = 'block';
-    setTimeout(()=>{ testContinueDay(); }, 1600);
-    return;
+    contBtn.textContent = G.batting ? 'CONTINUE BATTING' : 'CONTINUE';
   }
-  contBtn.style.display = 'inline-block';
-  box.style.display = 'block';
+  if(declareBtn){
+    // User requested declare/continue after day one, so declaration is offered
+    // from the first completed day whenever YOU are the batting side.
+    declareBtn.style.display = G.batting ? 'inline-block' : 'none';
+  }
+
+  if(landing) show('testday');
+  else { const box = document.getElementById('sp_test-day-box'); if(box) box.style.display='block'; }
+
+  // CPU never declares; pause on the landing page briefly, then resume.
+  if(!G.batting){
+    if(G._testAutoTimer) clearTimeout(G._testAutoTimer);
+    G._testAutoTimer = setTimeout(()=>{ G._testAutoTimer=null; testContinueDay(); }, 1600);
+  }
 }
 function testContinueDay(){
+  if(G._testAutoTimer){ clearTimeout(G._testAutoTimer); G._testAutoTimer=null; }
   const box = document.getElementById('sp_test-day-box');
   if(box) box.style.display='none';
   if(G._testTotalDaysUsed >= TEST_MATCH_DAYS){
@@ -3291,17 +3428,21 @@ function testContinueDay(){
     finalTestResult();
     return;
   }
-  // Roll to next day
-  G._testDay = (G._testDay||1) + 1;
+  // Roll to the next match day without resetting the innings count.
   G._testBallsThisDay = 0;
+  G._testDay = testMatchDay();
   G.inputLocked = false;
-  // Refresh the badges so the user sees Day N
+  G.inningClosing = false;
+  show('game');
+  // Refresh the badges so the user sees the match-wide day number.
   updateScoreboardFull(); updateLiveStats();
-  setCommentary('Day '+G._testDay+' begins.');
+  setCommentary('Match day '+G._testDay+' begins.');
 }
 function testDeclare(){
+  if(G._testAutoTimer){ clearTimeout(G._testAutoTimer); G._testAutoTimer=null; }
   const box = document.getElementById('sp_test-day-box');
   if(box) box.style.display='none';
+  show('game');
   G._testDeclared = true;
   G.inputLocked = true;
   G.inningClosing = true;
@@ -3347,6 +3488,10 @@ const TIE_QUIPS = [
 function _pickQuip(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 function showResult(yourScore,cpuScore,overrideMsg){
   try{
+    // Result DOM is reused between matches. Remove any old Super Over offer
+    // before painting the new result; otherwise a previous tied match can make
+    // a later won Season match look like it needs a Super Over.
+    document.querySelectorAll('#sp_screen-result .so-banner').forEach(b=>b.remove());
     document.getElementById('sp_wpb')?.classList.add('wpb-hidden');
     document.getElementById('sp_msstrip')?.classList.add('ms-hidden');
     window.__spWpbLast=undefined;
@@ -4111,7 +4256,8 @@ function skipInterBot(){
     maxBalls: _seasonMaxBalls(s), maxWkts: _seasonMaxWkts(s)
   });
   if(!r){ window.toast && toast('Sim engine missing.', 'bad'); return; }
-  Season.applyMatchResult({fixtureIdx:f.idx, p1Score:r.p1Score, p2Score:r.p2Score, p1Balls:r.p1Balls, p2Balls:r.p2Balls});
+  _seasonResolvePlayoffTieIfNeeded(f, s, r);
+  Season.applyMatchResult({fixtureIdx:f.idx, p1Score:r.p1Score, p2Score:r.p2Score, p1Balls:r.p1Balls, p2Balls:r.p2Balls, winner:r.winner, tiebreaker:r.tiebreaker});
   _renderSeasonHub();
   // Soft toast
   const w = r.winner ? Season.shortName(r.winner) : 'TIE';
@@ -4128,7 +4274,8 @@ function skipAllInterBots(){
       p1:next.p1, p2:next.p2, mode:s.mode,
       maxBalls:_seasonMaxBalls(s), maxWkts:_seasonMaxWkts(s)
     });
-    Season.applyMatchResult({fixtureIdx:next.idx, p1Score:r.p1Score, p2Score:r.p2Score, p1Balls:r.p1Balls, p2Balls:r.p2Balls});
+    _seasonResolvePlayoffTieIfNeeded(next, s, r);
+    Season.applyMatchResult({fixtureIdx:next.idx, p1Score:r.p1Score, p2Score:r.p2Score, p1Balls:r.p1Balls, p2Balls:r.p2Balls, winner:r.winner, tiebreaker:r.tiebreaker});
     count++;
     if(count>200) break;   // safety
   }
@@ -4167,6 +4314,35 @@ function _seasonMaxWkts(s){
   if(s && typeof s.wickets === 'number' && s.wickets >= 1) return s.wickets;
   if(s.mode==='TEST') return 5;
   return 3;
+}
+
+function _seasonIsPlayoffStage(stage){ return stage && stage !== 'league'; }
+function _seasonHigherSeedWinner(s, a, b){
+  try{
+    const std = (s && s.standings && s.standings.length) ? s.standings : (Season.standings ? Season.standings(s) : []);
+    const rank = id => {
+      const i = std.findIndex(r => r.id === id);
+      return i >= 0 ? i : 999;
+    };
+    return rank(a) <= rank(b) ? a : b;
+  }catch(_){ return a; }
+}
+function _seasonResolvePlayoffTieIfNeeded(f, s, r){
+  if(!f || !s || !r || !_seasonIsPlayoffStage(f.stage) || r.p1Score !== r.p2Score) return r;
+  try{
+    const tb = window.Sim && Sim.resolvePlayoffTieInstant && Sim.resolvePlayoffTieInstant({
+      p1:f.p1, p2:f.p2, mode:s.mode,
+      maxBalls:_seasonMaxBalls(s), maxWkts:_seasonMaxWkts(s)
+    }, r, (a,b)=>_seasonHigherSeedWinner(s,a,b));
+    if(tb && tb.winner){
+      r.winner = tb.winner;
+      r.tiebreaker = tb;
+    }
+  }catch(e){
+    r.winner = _seasonHigherSeedWinner(s, f.p1, f.p2);
+    r.tiebreaker = { winner:r.winner, reason:'TABLE POSITION' };
+  }
+  return r;
 }
 
 // ── Watch screen helpers ──
@@ -4271,7 +4447,8 @@ function _sswStart(f, s){
   result.then(r=>{
     if(_sswCtl.aborted) return;     // user navigated away
     // Record result
-    Season.applyMatchResult({fixtureIdx:f.idx, p1Score:r.p1Score, p2Score:r.p2Score, p1Balls:r.p1Balls, p2Balls:r.p2Balls});
+    _seasonResolvePlayoffTieIfNeeded(f, s, r);
+    Season.applyMatchResult({fixtureIdx:f.idx, p1Score:r.p1Score, p2Score:r.p2Score, p1Balls:r.p1Balls, p2Balls:r.p2Balls, winner:r.winner, tiebreaker:r.tiebreaker});
     const w = r.winner ? Season.shortName(r.winner) : 'TIE';
     document.getElementById('ssw-comm').textContent =
       `Match complete — ${w} ${r.winner?'wins':''}.`;
@@ -4337,7 +4514,8 @@ function sswSkipToEnd(){
     p1:f.p1, p2:f.p2, mode:s.mode,
     maxBalls:_seasonMaxBalls(s), maxWkts:_seasonMaxWkts(s)
   });
-  Season.applyMatchResult({fixtureIdx:f.idx, p1Score:r.p1Score, p2Score:r.p2Score, p1Balls:r.p1Balls, p2Balls:r.p2Balls});
+  _seasonResolvePlayoffTieIfNeeded(f, s, r);
+  Season.applyMatchResult({fixtureIdx:f.idx, p1Score:r.p1Score, p2Score:r.p2Score, p1Balls:r.p1Balls, p2Balls:r.p2Balls, winner:r.winner, tiebreaker:r.tiebreaker});
   show('season-hub');
   _renderSeasonHub();
 }
@@ -5463,6 +5641,10 @@ function hostResolveBall(){
     // stats
     if(!R.stats[batId]) R.stats[batId]={runs:0,wickets:0,matches:0,wins:0,losses:0,runsFor:0,runsAgainst:0};
     if(!res.out) R.stats[batId].runs+=(res.pts??0);
+    m.boundaryCounts = m.boundaryCounts || {[m.p1]:0,[m.p2]:0};
+    if(!res.out && (res.pts === 10 || res.pts === 9 || res.pts === 6 || res.pts === 4)){
+      m.boundaryCounts[batId] = (m.boundaryCounts[batId]||0) + 1;
+    }
 
     // over end
     if(m.ballInOver>=6){
@@ -5475,8 +5657,8 @@ function hostResolveBall(){
     }
 
     // check end conditions
-    const maxBalls=R.settings.balls;
-    const maxWkts=R.settings.wickets;
+    const maxBalls=m._playoffSOActive?6:R.settings.balls;
+    const maxWkts=m._playoffSOActive?1:R.settings.wickets;
     const wktsGone=(m.wickets[batId]||0)>=maxWkts;
     const ballsUp=maxBalls>0&&m.balls>=maxBalls;
     const chaseWon=m.chase&&m.target!==null&&m.scores[batId]>m.target;
@@ -5701,6 +5883,82 @@ function finaliseResult(m){
   pushState();
 }
 
+
+function isPlayoffPhaseMP(phase){ return phase && phase !== 'league' && phase !== 'rematch'; }
+function mpHigherSeedWinner(a,b){
+  try{
+    const table = getLeagueTable();
+    const rank = id => {
+      const i = table.findIndex(x=>x.id===id);
+      return i >= 0 ? i : 999;
+    };
+    return rank(a) <= rank(b) ? a : b;
+  }catch(_){ return a; }
+}
+function mpStartPlayoffSuperOver(m, firstBatter){
+  if(!m) return;
+  const bowler = firstBatter === m.p1 ? m.p2 : m.p1;
+  m._playoffSO = m._playoffSO || {round:0, baseS1:0, baseS2:0};
+  m._playoffSO.round = (m._playoffSO.round||0) + 1;
+  m._playoffSOActive = true;
+  m.innings = 1;
+  m.batting = firstBatter;
+  m.bowling = bowler;
+  m.scores[m.p1]=0; m.scores[m.p2]=0;
+  m.wickets[m.p1]=0; m.wickets[m.p2]=0;
+  m.balls=0; m.over=0; m.ballInOver=0;
+  m.locked={[m.p1]:null,[m.p2]:null};
+  m.timerStart=null;
+  m.ballLog=[]; m.overHistory=[]; m.currentOver=[];
+  m.bowlerFigs={}; m.currentBowler=bowler;
+  m.target=null; m.chase=false; m.result=null;
+  m.phase='playing';
+  sysMsg(`Playoff tie — Super Over ${m._playoffSO.round}! ${pName(firstBatter)} continues batting.`);
+  pushState();
+  if(R.settings.type==='team') setupTeamBowler(m);
+  else hostStartBallTimer();
+}
+function mpMaybeHandlePlayoffTie(m, sched, result){
+  if(!sched || !isPlayoffPhaseMP(sched.phase) || result.winner) return false;
+  if(!m._playoffSO){
+    m._playoffSO = { round:0, baseS1:result.s1, baseS2:result.s2 };
+    mpStartPlayoffSuperOver(m, m.batting); // tied innings batter continues
+    return true;
+  }
+  const round = m._playoffSO.round || 1;
+  const p1SO = (m.innScores[m.p1]||[]).slice(-1)[0] || 0;
+  const p2SO = (m.innScores[m.p2]||[]).slice(-1)[0] || 0;
+  if(p1SO !== p2SO){
+    result.winner = p1SO > p2SO ? m.p1 : m.p2;
+    result.s1 = m._playoffSO.baseS1;
+    result.s2 = m._playoffSO.baseS2;
+    result.margin = `SUPER OVER ${round} · ${pName(m.p1)} ${p1SO}–${p2SO} ${pName(m.p2)}`;
+    result.tiebreaker = {reason:'SUPER OVER '+round, p1SO, p2SO, winner:result.winner};
+    m._playoffSOActive = false;
+    return false;
+  }
+  if(round < 2){
+    sysMsg(`Super Over ${round} tied — another Super Over!`);
+    mpStartPlayoffSuperOver(m, m.batting); // side that just batted continues
+    return true;
+  }
+  const c1 = (m.boundaryCounts||{})[m.p1] || 0;
+  const c2 = (m.boundaryCounts||{})[m.p2] || 0;
+  if(c1 !== c2){
+    result.winner = c1 > c2 ? m.p1 : m.p2;
+    result.margin = `BOUNDARY COUNT (10/9/6/4) · ${pName(m.p1)} ${c1}–${c2} ${pName(m.p2)}`;
+    result.tiebreaker = {reason:'BOUNDARY COUNT', p1Count:c1, p2Count:c2, winner:result.winner};
+  } else {
+    result.winner = mpHigherSeedWinner(m.p1, m.p2);
+    result.margin = `TABLE POSITION TIEBREAK · ${pName(result.winner)} advance`;
+    result.tiebreaker = {reason:'TABLE POSITION', winner:result.winner};
+  }
+  result.s1 = m._playoffSO.baseS1;
+  result.s2 = m._playoffSO.baseS2;
+  m._playoffSOActive = false;
+  return false;
+}
+
 function resolveMatchResult(m){
   if(m.result&&m.result.forfeited){/* already set by forfeit path */}
   else{
@@ -5715,6 +5973,9 @@ function resolveMatchResult(m){
     m.result={winner, s1, s2, margin, p1:m.p1, p2:m.p2};
   }
   m.phase='result';
+
+  const sched=R.schedule.find(s=>s.id===R.currentMatchId);
+  if(mpMaybeHandlePlayoffTie(m, sched, m.result)) return;
 
   const{p1,p2,result}=m;
   const s1=result.s1, s2=result.s2;
@@ -5749,12 +6010,12 @@ function resolveMatchResult(m){
   });
 
   // Mark schedule entry
-  const sched=R.schedule.find(s=>s.id===R.currentMatchId);
   if(sched){
     sched.done=true;
     sched.winner=result.winner;
-    sched.s1=(m.innScores?.[sched.p1]||[]).reduce((a,b)=>a+b,0);
-    sched.s2=(m.innScores?.[sched.p2]||[]).reduce((a,b)=>a+b,0);
+    sched.s1=result.s1;
+    sched.s2=result.s2;
+    sched.tiebreaker=result.tiebreaker||null;
   }
 
   pushState();
@@ -7612,10 +7873,18 @@ function refreshUsernameLabels(){
   // Legacy "current-user-label" (kept for back-compat — chip is now combined)
   const lbl = document.getElementById('current-user-label');
   if(lbl) lbl.textContent = dn==='GUEST' ? 'Guest' : dn.charAt(0)+dn.slice(1).toLowerCase();
+  let oppName = 'CPU';
+  try{
+    const k = window.Features && Features.getSelectedBotKey && Features.getSelectedBotKey();
+    const bots = window.Features && Features.getBots && Features.getBots();
+    if(k && bots && bots[k]) oppName = bots[k].name || k;
+    else if(k && window.BOTS && BOTS[k]) oppName = BOTS[k].name || k;
+  }catch(_){}
+  const versusLabel = dn + ' vs ' + oppName;
   const homeSub = document.getElementById('home-solo-sub');
-  if(homeSub) homeSub.textContent = dn + ' vs CPU';
+  if(homeSub) homeSub.textContent = versusLabel;
   const spSub = document.getElementById('sp_subtitle');
-  if(spSub) spSub.textContent = dn + ' vs CPU';
+  if(spSub) spSub.textContent = versusLabel;
   // Sync the combined Profile chip — its label is "Name · Lv N".
   try{ window.refreshProfileChip && window.refreshProfileChip(); }catch(_){}
 }
@@ -7719,13 +7988,16 @@ async function goHomeUnified(){
 .tut-actions{display:flex;gap:10px;justify-content:center;}
 
 /* ── Achievement toast ── */
-.ach-pop{position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:1350;background:linear-gradient(160deg,#1a1408 0%,#0a0804 100%);border:1.5px solid #ffd060;border-radius:12px;padding:16px 22px;display:flex;gap:14px;align-items:center;box-shadow:0 12px 40px rgba(0,0,0,0.6),0 0 30px rgba(245,166,35,0.4);animation:achPop 0.5s cubic-bezier(0.175,0.885,0.32,1.275);max-width:380px;}
-@keyframes achPop{from{opacity:0;transform:translate(-50%,-30px) scale(0.8)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+.ach-pop{position:fixed;right:16px;bottom:16px;z-index:1720;background:linear-gradient(160deg,#1a1408 0%,#0a0804 100%);border:1.5px solid #ffd060;border-radius:12px;padding:16px 22px;display:flex;gap:14px;align-items:center;box-shadow:0 12px 40px rgba(0,0,0,0.6),0 0 30px rgba(245,166,35,0.4);animation:achPop 0.5s cubic-bezier(0.175,0.885,0.32,1.275);max-width:380px;}
+@keyframes achPop{from{opacity:0;transform:translateY(30px) scale(0.9)}to{opacity:1;transform:translateY(0) scale(1)}}
 .ach-pop .ach-icon{font-size:36px;line-height:1;filter:drop-shadow(0 0 12px rgba(245,166,35,0.6));}
 .ach-pop .ach-text{flex:1;}
 .ach-pop .ach-label{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:3px;color:#ffd060;text-transform:uppercase;}
 .ach-pop .ach-name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:#fff;}
 .ach-pop .ach-desc{font-family:'Share Tech Mono',monospace;font-size:10px;color:#9aa6b8;margin-top:2px;}
+.ach-fly{position:fixed;z-index:1800;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#1a1408,#0a0804);border:1.5px solid #ffd060;box-shadow:0 0 24px rgba(255,208,96,0.55);font-size:20px;pointer-events:none;transition:left 1.45s cubic-bezier(.16,.84,.22,1),top 1.45s cubic-bezier(.16,.84,.22,1),transform 1.45s cubic-bezier(.16,.84,.22,1),opacity 1.45s;}
+#profile-btn.profile-pulse{animation:profilePulse 0.85s ease-out 1;}
+@keyframes profilePulse{0%{box-shadow:0 0 0 rgba(122,249,178,0);transform:scale(1)}35%{box-shadow:0 0 24px rgba(122,249,178,0.75);transform:scale(1.06)}100%{box-shadow:0 0 0 rgba(122,249,178,0);transform:scale(1)}}
 
 /* ── Momentum bar ── */
 #sp-root .momentum-bar{display:none;height:4px;background:#0a150a;border-radius:2px;overflow:hidden;margin-bottom:8px;position:relative;}
@@ -7800,6 +8072,38 @@ async function goHomeUnified(){
 @keyframes emoteFloat{0%{opacity:1;transform:translateY(0) scale(0.8) rotate(-15deg)}50%{transform:translateY(-60px) scale(1.3) rotate(15deg)}100%{opacity:0;transform:translateY(-120px) scale(1.5) rotate(0deg)}}
 
 
+
+
+/* ── Super Over playoff spotlight ── */
+#sp-root .so-top-badge{
+  margin:8px auto 0;display:inline-block;padding:6px 18px;border:1.5px solid #ffd060;border-radius:999px;
+  font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:5px;color:#1a0e00;
+  background:linear-gradient(90deg,#ffd060,#f5a623,#ffd060);box-shadow:0 0 26px rgba(255,208,96,0.55);
+  animation:soBadgeDrop .55s cubic-bezier(.18,1.4,.24,1), soBadgePulse 1.25s ease-in-out infinite;
+}
+#sp-root.so-page-invert .app{filter:hue-rotate(180deg) invert(.88) saturate(1.25);transition:filter .45s ease;}
+#sp-root.so-page-invert .so-top-badge{filter:invert(1) hue-rotate(180deg);}
+@keyframes soBadgeDrop{from{opacity:0;transform:translateY(-18px) scale(1.18);letter-spacing:12px}to{opacity:1;transform:translateY(0) scale(1);letter-spacing:5px}}
+@keyframes soBadgePulse{0%,100%{box-shadow:0 0 20px rgba(255,208,96,.35)}50%{box-shadow:0 0 38px rgba(255,208,96,.85)}}
+
+/* ── Epic playoff tiebreak page ── */
+.tb-epic-card{max-width:720px;margin:0 auto;padding:24px 18px;text-align:center;background:radial-gradient(ellipse at top,rgba(255,208,96,.14),transparent 48%),linear-gradient(160deg,#0b1424,#050812);border:1.5px solid #ffd060;border-radius:14px;box-shadow:0 24px 80px rgba(0,0,0,.65),0 0 40px rgba(255,208,96,.18);overflow:hidden;position:relative;}
+.tb-epic-card::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.10),transparent);transform:translateX(-110%);animation:tbSweep 2.8s ease-in-out infinite;pointer-events:none;}
+.tb-kicker{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:5px;color:#9aa6b8;text-transform:uppercase;animation:tbPlace .55s both;}
+.tb-epic-card h2{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:7px;color:#ffd060;text-shadow:0 0 24px rgba(255,208,96,.55);margin:8px 0 2px;animation:tbHeavy .7s .08s both;}
+.tb-heavy{font-family:'Bebas Neue',sans-serif;font-size:64px;letter-spacing:9px;color:#fff;line-height:.95;text-shadow:0 10px 0 rgba(0,0,0,.35),0 0 28px rgba(255,208,96,.45);animation:tbSlam .82s .18s cubic-bezier(.12,1.35,.2,1) both;}
+.tb-sub{font-family:'Share Tech Mono',monospace;font-size:12px;color:#cfd6e3;letter-spacing:1px;line-height:1.6;margin:14px auto;max-width:560px;animation:tbPlace .55s .38s both;}
+.tb-table{width:100%;border-collapse:collapse;margin:14px 0 16px;font-family:'Share Tech Mono',monospace;font-size:12px;animation:tbPlace .55s .50s both;}
+.tb-table th{font-size:10px;letter-spacing:3px;color:#ffd060;border-bottom:1px solid rgba(255,208,96,.35);padding:8px 6px;text-align:center;}
+.tb-table th:first-child{text-align:left;color:#9aa6b8;}
+.tb-table td{padding:9px 6px;border-bottom:1px solid rgba(255,255,255,.06);color:#cfd6e3;text-align:center;}
+.tb-table td:first-child{text-align:left;color:#9aa6b8;text-transform:uppercase;font-size:10px;letter-spacing:2px;}
+.tb-table .tb-win{color:#7af9b2;font-weight:700;text-shadow:0 0 10px rgba(122,249,178,.3);}
+.tb-winner{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;color:#7af9b2;text-shadow:0 0 18px rgba(122,249,178,.45);margin:12px 0 16px;animation:tbSlam .7s .72s both;}
+@keyframes tbSweep{0%{transform:translateX(-110%)}45%,100%{transform:translateX(110%)}}
+@keyframes tbPlace{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes tbHeavy{from{opacity:0;transform:translateY(-20px) scale(1.08);filter:blur(2px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+@keyframes tbSlam{0%{opacity:0;transform:translateY(-70px) scale(1.35);filter:blur(3px)}58%{opacity:1;transform:translateY(8px) scale(.96);filter:blur(0)}100%{opacity:1;transform:translateY(0) scale(1)}}
 
 /* ── History filter ── */
 .history-filter{display:flex;gap:6px;flex-wrap:wrap;padding:8px 14px;background:rgba(0,0,0,0.2);border-bottom:1px solid var(--border);}
@@ -7922,7 +8226,7 @@ async function goHomeUnified(){
 .bx-section{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:4px;color:#f5a623;text-transform:uppercase;padding:14px 0 8px;border-top:1px solid rgba(245,166,35,0.2);margin-top:10px;}
 
 .bracket-svg{display:block;max-width:100%;background:radial-gradient(ellipse at top right,rgba(245,166,35,0.04) 0%,transparent 60%);border-radius:6px;overflow:visible;}
-.bracket-svg .bx-lines path{fill:none;stroke:url(#bxLine);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;}
+.bracket-svg .bx-lines path{fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;}
 .bracket-svg .bxn{font-family:'Share Tech Mono',monospace;font-size:8px;fill:#5a6878;letter-spacing:1px;text-transform:uppercase;}
 
 .bx-box{background:linear-gradient(160deg,#0a1525 0%,#070d1a 100%);border:1.5px solid #1c2a4a;border-radius:6px;padding:6px 8px;font-family:'Share Tech Mono',monospace;font-size:11px;color:#c5cad6;height:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;position:relative;overflow:hidden;}
@@ -9371,8 +9675,9 @@ window.Progress = (function(){
     t.className = 'prog-toast prog-toast-lvl';
     t.innerHTML = '<span class="pt-ico">🎉</span>' +
                   '<span class="pt-lvl">LEVEL ' + L + '</span>' +
-                  '<span class="pt-reason">level up!</span>';
+                  '<span class="pt-reason">added to profile · level up!</span>';
     _stackToast(t, 4200);
+    setTimeout(()=>_progressFlyToProfile(t, '🎉'), 1050);
   }
   function showSkillToast(s){
     const t = document.createElement('div');
@@ -9390,10 +9695,40 @@ window.Progress = (function(){
                    '<span class="pt-reason">'+t.name+' · +'+t.xp+' XP</span>';
     _stackToast(el, 4500);
   }
+  function _progressFlyToProfile(sourceEl, ico){
+    try{
+      const target = document.getElementById('profile-btn');
+      if(!sourceEl || !target) return;
+      const sr = sourceEl.getBoundingClientRect();
+      const tr = target.getBoundingClientRect();
+      if(!sr.width || !tr.width) return;
+      const fly = document.createElement('div');
+      fly.className = 'ach-fly';
+      fly.textContent = ico || '⭐';
+      fly.style.left = (sr.left + 24) + 'px';
+      fly.style.top  = (sr.top + sr.height/2 - 17) + 'px';
+      document.body.appendChild(fly);
+      // Hold for a beat so the user notices the badge, then glide smoothly
+      // into the Profile chip.
+      setTimeout(()=>{
+        requestAnimationFrame(()=>{
+          fly.style.left = (tr.left + tr.width/2 - 17) + 'px';
+          fly.style.top  = (tr.top  + tr.height/2 - 17) + 'px';
+          fly.style.transform = 'scale(0.45) rotate(18deg)';
+          fly.style.opacity = '0.18';
+        });
+      }, 220);
+      setTimeout(()=>{
+        fly.remove();
+        target.classList.add('profile-pulse');
+        setTimeout(()=>target.classList.remove('profile-pulse'), 900);
+      }, 1780);
+    }catch(_){}
+  }
   function _stackToast(el, ms){
     document.body.appendChild(el);
     // stack offset
-    const all = document.querySelectorAll('.prog-toast');
+    const all = document.querySelectorAll('.prog-toast,.ach-pop');
     let off = 0;
     all.forEach((n,i)=>{
       if(n === el) return;
@@ -9683,12 +10018,16 @@ window.Season = (function(){
     const f = s.fixtures[ctx.fixtureIdx];
     if(!f || f.done) return;
     f.done = true;
-    const winner = ctx.p1Score > ctx.p2Score ? f.p1 :
-                   ctx.p2Score > ctx.p1Score ? f.p2 : null;
+    let winner = ctx.p1Score > ctx.p2Score ? f.p1 :
+                 ctx.p2Score > ctx.p1Score ? f.p2 : null;
+    // Playoff fixtures cannot stay tied. A caller may pass a winner after
+    // resolving the tie by enforced Super Overs / boundary count / table rank.
+    if(ctx.winner && (ctx.winner === f.p1 || ctx.winner === f.p2)) winner = ctx.winner;
     f.result = {
       s1: ctx.p1Score|0, s2: ctx.p2Score|0,
       b1: ctx.p1Balls|0, b2: ctx.p2Balls|0,
-      winner: winner, ts: Date.now()
+      winner: winner, ts: Date.now(),
+      tiebreaker: ctx.tiebreaker || null
     };
     // Update points table — only league matches feed the table.
     if(f.stage === 'league'){
@@ -10061,8 +10400,51 @@ window.Sim = (function(){
     });
   }
 
+  function _countBigHits(target, innings){
+    if(!innings || !innings.batter) return;
+    (innings.log||[]).forEach(b=>{
+      if(!b || b.out) return;
+      const pts = +b.pts || 0;
+      if(pts === 10 || pts === 9 || pts === 6 || pts === 4){
+        target[innings.batter] = (target[innings.batter]||0) + 1;
+      }
+    });
+  }
+
+  // Resolve an already-tied playoff match for bot-vs-bot season fixtures.
+  // SO1 is forced; if tied, SO2 is forced with the side that just batted
+  // continuing to bat first. If SO2 is also tied, the winner is decided by
+  // most 10/9/6/4 hits across the match + SOs, then by caller-supplied seed.
+  function resolvePlayoffTieInstant(opts, baseResult, higherSeedWinner){
+    const counts = { [opts.p1]:0, [opts.p2]:0 };
+    _countBigHits(counts, baseResult && baseResult.inn1);
+    _countBigHits(counts, baseResult && baseResult.inn2);
+    const sos = [];
+    let first = (baseResult && baseResult.inn2 && baseResult.inn2.batter) || opts.p2;
+    let winner = null, reason = '';
+    for(let round=1; round<=2; round++){
+      const second = first === opts.p1 ? opts.p2 : opts.p1;
+      const soOpts = { ...opts, maxBalls:6, maxWkts:1 };
+      const a = _simInnings(soOpts, first, second, null);
+      const b = _simInnings(soOpts, second, first, a.runs);
+      _countBigHits(counts, { batter:first,  log:a.log });
+      _countBigHits(counts, { batter:second, log:b.log });
+      sos.push({ round, first, second, firstScore:a.runs, secondScore:b.runs, firstBalls:a.balls, secondBalls:b.balls });
+      if(a.runs > b.runs){ winner = first; reason = 'SUPER OVER ' + round; break; }
+      if(b.runs > a.runs){ winner = second; reason = 'SUPER OVER ' + round; break; }
+      first = second; // tied SO: the side that was batting continues to bat
+    }
+    if(!winner){
+      const c1 = counts[opts.p1] || 0, c2 = counts[opts.p2] || 0;
+      if(c1 > c2){ winner = opts.p1; reason = 'BOUNDARY COUNT'; }
+      else if(c2 > c1){ winner = opts.p2; reason = 'BOUNDARY COUNT'; }
+      else { winner = (typeof higherSeedWinner === 'function' && higherSeedWinner(opts.p1, opts.p2)) || opts.p1; reason = 'TABLE POSITION'; }
+    }
+    return { winner, reason, counts, superOvers:sos };
+  }
+
   return {
-    simMatchInstant, simMatchWatched
+    simMatchInstant, simMatchWatched, resolvePlayoffTieInstant
   };
 })();
 </script>
@@ -10074,6 +10456,18 @@ window.Sim = (function(){
 (function(){
 'use strict';
 if(!window.SP || !window.MP || !window.Users || !window.Sound || !window.Store) return;
+
+function _seasonIsPlayoffStage(stage){ return stage && stage !== 'league'; }
+function _seasonHigherSeedWinner(s, a, b){
+  try{
+    const std = (s && s.standings && s.standings.length) ? s.standings : (window.Season && Season.standings ? Season.standings(s) : []);
+    const rank = id => {
+      const i = std.findIndex(r => r.id === id);
+      return i >= 0 ? i : 999;
+    };
+    return rank(a) <= rank(b) ? a : b;
+  }catch(_){ return a; }
+}
 
 // ════════════ 1. ACHIEVEMENTS ════════════
 const ACHIEVEMENTS = [
@@ -10197,19 +10591,64 @@ function unlock(id){
   return true;
 }
 function showAchievementPop(a){
-  // remove any existing
-  document.querySelectorAll('.ach-pop').forEach(e=>e.remove());
   const el = document.createElement('div');
   el.className = 'ach-pop';
   el.innerHTML = `<div class="ach-icon">${a.ico}</div>
     <div class="ach-text">
-      <div class="ach-label">Achievement Unlocked</div>
+      <div class="ach-label">Added to Profile</div>
       <div class="ach-name">${a.name}</div>
-      <div class="ach-desc">${a.desc}</div>
+      <div class="ach-desc">Achievement unlocked · ${a.desc}</div>
     </div>`;
   document.body.appendChild(el);
-  setTimeout(()=>{ el.style.transition='opacity 0.4s,transform 0.4s'; el.style.opacity='0'; el.style.transform='translate(-50%,-30px) scale(0.9)'; setTimeout(()=>el.remove(),420); }, 3800);
+  // Stack from the right-bottom corner so multiple end-of-match unlocks do
+  // not cover each other.
+  const all = Array.from(document.querySelectorAll('.ach-pop,.prog-toast'));
+  let off = 0;
+  all.forEach(n=>{
+    if(n === el) return;
+    off += (n.offsetHeight || 72) + 8;
+  });
+  el.style.bottom = (16 + off) + 'px';
+  setTimeout(()=>animateAchievementToProfile(el, a), 1050);
+  setTimeout(()=>{
+    el.style.transition='opacity 0.4s,transform 0.4s';
+    el.style.opacity='0';
+    el.style.transform='translateY(20px) scale(0.95)';
+    setTimeout(()=>el.remove(),420);
+  }, 3800);
 }
+function animateAchievementToProfile(popEl, a){
+  try{
+    const target = document.getElementById('profile-btn');
+    if(!popEl || !target) return;
+    const icon = popEl.querySelector('.ach-icon');
+    const sr = (icon || popEl).getBoundingClientRect();
+    const tr = target.getBoundingClientRect();
+    if(!sr.width || !tr.width) return;
+    const fly = document.createElement('div');
+    fly.className = 'ach-fly';
+    fly.textContent = a.ico || '🏆';
+    fly.style.left = (sr.left + sr.width/2 - 17) + 'px';
+    fly.style.top  = (sr.top  + sr.height/2 - 17) + 'px';
+    document.body.appendChild(fly);
+    // Hold for a beat so the user notices the badge, then glide smoothly
+    // into the Profile chip.
+    setTimeout(()=>{
+      requestAnimationFrame(()=>{
+        fly.style.left = (tr.left + tr.width/2 - 17) + 'px';
+        fly.style.top  = (tr.top  + tr.height/2 - 17) + 'px';
+        fly.style.transform = 'scale(0.45) rotate(18deg)';
+        fly.style.opacity = '0.18';
+      });
+    }, 220);
+    setTimeout(()=>{
+      fly.remove();
+      target.classList.add('profile-pulse');
+      setTimeout(()=>target.classList.remove('profile-pulse'), 900);
+    }, 1780);
+  }catch(_){}
+}
+
 
 // ════════════ 2. CPU OPPONENTS (each persona has its own tier — replaces difficulty levels) ════════════
 const BOTS = {
@@ -10286,6 +10725,7 @@ const BOTS = {
     pick:(pool,last,score,batting,ctx)=>demonPick(pool,last,score,batting,ctx)
   },
 };
+window.BOTS = BOTS;
 function rnd(a){return a[Math.floor(Math.random()*a.length)];}
 let selectedBot = 'ALLROUNDER'; // a neutral starting opponent
 
@@ -12161,6 +12601,8 @@ function selectBotFn(k){
   renderBotGrid();
   // Keep SP's legacy `difficulty` value in sync (used by badges and history records)
   try{ SP.setDiff(BOTS[k].tier); }catch(e){}
+  // Keep the match header labels in sync with the selected bot.
+  try{ refreshUsernameLabels(); }catch(_){}
   // Toast so the user gets feedback even if the picker is off-screen
   const b = BOTS[k];
   window.toast && toast(`Opponent: ${b.name} (${b.tier})`, 'good', 1800);
@@ -12504,8 +12946,8 @@ function onResultShown(){
   // season-side ids — PLAYER is the user; the other is the bot key.
   try{
     if(window.Season && window.__seasonLaunched){
+      if(_handleSeasonPlayoffSOResult()) return;
       const fix = window.__seasonLaunched;
-      window.__seasonLaunched = null;
       // Derive per-side balls from the captured ball log so NRR is accurate.
       let yBalls = 0, cBalls = 0;
       try{
@@ -12518,6 +12960,8 @@ function onResultShown(){
       const p2Score = isP1User ? cpuScore  : yourScore;
       const p1Balls = isP1User ? yBalls    : cBalls;
       const p2Balls = isP1User ? cBalls    : yBalls;
+      if(_maybeStartSeasonPlayoffSOFromResult(fix, p1Score, p2Score, p1Balls, p2Balls)) return;
+      window.__seasonLaunched = null;
       window.Season.applyMatchResult({
         fixtureIdx: fix.fixtureIdx,
         p1Score, p2Score, p1Balls, p2Balls
@@ -12805,7 +13249,15 @@ window.enterSolo = function(){
 const _origBeginGame = SP.beginGame;
 SP.beginGame = function(mode){
   _origBeginGame(mode);
+  try{
+    const G = SP._G();
+    if(G){ G._maxWickets = undefined; G._maxBalls = undefined; }
+  }catch(_){}
   applyWicketSetting();
+  try{
+    const G = SP._G();
+    if(G){ G._boundaryCounts = {you:0, cpu:0}; G._seasonPlayoffSO = null; }
+  }catch(_){}
 };
 // Apply on toss too, in case beginGame was called via internal closure path.
 const _origCallToss = SP.callToss;
@@ -12831,7 +13283,12 @@ function applyWicketSetting(){
       G._maxWickets = getActualWickets();
     }
     if(typeof G._maxBalls !== 'number'){
-      G._maxBalls = getActualBalls(); // 0 = unlimited
+      const actualBalls = getActualBalls();
+      // TEST cannot be infinite: if the player picked ∞, use 120 balls per
+      // match day. Other modes keep the classic unlimited behaviour.
+      G._maxBalls = (G.mode === 'TEST' && actualBalls === 0) ? 120 : actualBalls;
+    } else if(G.mode === 'TEST' && G._maxBalls === 0){
+      G._maxBalls = 120;
     }
   }
   if(typeof G._wicketsFallen !== 'number') G._wicketsFallen = 0;
@@ -12928,14 +13385,15 @@ window.addEventListener('beforeunload', ()=>{
 // tab-close, refresh or "Home" lets the player resume exactly where they left off.
 //
 // Storage key: pavilion_resume_<username>
-// Schema: {ts, mode, difficulty, bot, G:<subset>, screen:'game'|'innbreak', innBreakUI:{...}}
+// Schema: {ts, mode, difficulty, bot, G:<subset>, screen:'game'|'innbreak'|'testday', innBreakUI:{...}}
 // Stale entries (>24h) are auto-cleared.
 
 const RESUME_TTL_MS = 24 * 60 * 60 * 1000;
 const RESUME_KEYS_G = [
   'lucky','mode','difficulty','batting','score','yourInnings','cpuInnings',
-  'balls','youBatFirst','chase','followOnEnforced','testInning',
-  'ballLog','lastNum','repeatCount',
+  'yourWkts','cpuWkts','balls','youBatFirst','chase','followOnEnforced','testInning',
+  'ballLog','lastNum','repeatCount','_maxWickets','_maxBalls','_wicketsFallen',
+  '_testTotalDaysUsed','_testBallsThisDay','_testDay','_testForceDraw'
 ];
 
 function resumeKey(){
@@ -12954,7 +13412,8 @@ function snapshotMatch(){
   if(!sp || sp.style.display === 'none') return;
   const onGame = document.getElementById('sp_screen-game')?.classList.contains('active');
   const onBreak = document.getElementById('sp_screen-innbreak')?.classList.contains('active');
-  if(!onGame && !onBreak) return;
+  const onTestDay = document.getElementById('sp_screen-testday')?.classList.contains('active');
+  if(!onGame && !onBreak && !onTestDay) return;
   // Don't snapshot a finished match — if a result is visible the snapshot is moot
   if(document.getElementById('sp_screen-result')?.classList.contains('active')) return;
 
@@ -12975,7 +13434,7 @@ function snapshotMatch(){
   const snap = {
     ts: Date.now(),
     bot: selectedBot,
-    screen: onBreak ? 'innbreak' : 'game',
+    screen: onBreak ? 'innbreak' : (onTestDay ? 'testday' : 'game'),
     innBreakUI,
     G: subset,
   };
@@ -13025,7 +13484,8 @@ function resumeMatch(){
     score:0, balls:0, batting:true, chase:null, ballLog:[],
     inputLocked:false, selectedNum:null, inningClosing:false,
     lastNum:null, repeatCount:0, innBreakCallback:null,
-    yourInnings:[], cpuInnings:[],
+    yourInnings:[], cpuInnings:[], yourWkts:[], cpuWkts:[],
+    _wicketsFallen:0, _testTotalDaysUsed:0, _testBallsThisDay:0, _testDay:1,
     followOnEnforced:false, youBatFirst:true,
   });
   RESUME_KEYS_G.forEach(k => { if(k in snap.G) G[k] = snap.G[k]; });
@@ -13051,7 +13511,9 @@ function resumeMatch(){
     };
   }
   // Show the correct screen
-  if(snap.screen === 'innbreak'){
+  if(snap.screen === 'testday'){
+    try{ showTestDayEnd(); }catch(e){ SP.show('game'); }
+  } else if(snap.screen === 'innbreak'){
     if(snap.innBreakUI){
       const el = (id, html) => { const e = document.getElementById(id); if(e) e.innerHTML = html; };
       el('sp_inn-break-you', snap.innBreakUI.you);
@@ -13103,8 +13565,13 @@ function resumeMatch(){
     setText('sp_badge-diff', G.difficulty);
     setText('sp_badge-target', G.chase!==null ? `TARGET: ${G.chase+1}` : '');
     setText('sp_stat-innnum', innNum);
-    setText('sp_score-label-you', G.batting?'YOUR SCORE':'BALLS BOWLED');
-    setText('sp_score-label-cpu', G.batting?'BALLS BOWLED':'CPU SCORE');
+    if(G.mode==='TEST'){
+      setText('sp_score-label-you', 'YOUR TOTAL');
+      setText('sp_score-label-cpu', 'CPU TOTAL');
+    } else {
+      setText('sp_score-label-you', G.batting?'YOUR SCORE':'BALLS BOWLED');
+      setText('sp_score-label-cpu', G.batting?'BALLS BOWLED':'CPU SCORE');
+    }
     // Apply theme + scoreboard
     try{ SP.applyTheme(G.mode); }catch(e){}
     SP.updateScoreboardFull(); SP.updateLiveStats();
@@ -13579,7 +14046,7 @@ function buildKnockoutSVG(R){
       : '';
     return `<svg class="bracket-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMin meet" width="100%" height="${H}">
       <defs>
-        <linearGradient id="bxLine" x1="0" x2="1">
+        <linearGradient id="bxLineSolo" x1="0" x2="1">
           <stop offset="0" stop-color="rgba(245,166,35,0.55)"/>
           <stop offset="1" stop-color="rgba(245,166,35,0.25)"/>
         </linearGradient>
@@ -13653,12 +14120,12 @@ function buildKnockoutSVG(R){
 
   return `<svg class="bracket-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMin meet" width="100%" height="${H}">
     <defs>
-      <linearGradient id="bxLine" x1="0" x2="1">
+      <linearGradient id="bxLineFull" x1="0" x2="1">
         <stop offset="0" stop-color="rgba(245,166,35,0.55)"/>
         <stop offset="1" stop-color="rgba(245,166,35,0.25)"/>
       </linearGradient>
     </defs>
-    <g class="bx-lines">${lines.map(d=>`<path d="${d}" />`).join('')}</g>
+    <g class="bx-lines">${lines.map(d=>`<path d="${d}" stroke="url(#bxLineFull)" />`).join('')}</g>
     ${notes.join('')}
     ${boxes.join('')}
     ${champBlock}
@@ -14164,6 +14631,10 @@ onBallProcessed = function(){
     const b = _readLastBall(G); if(!b) return;
     _currentInnings.push(b);
     _matchBallLog.push(b);
+    if(!G._boundaryCounts) G._boundaryCounts = {you:0, cpu:0};
+    if(!b.out && (b.pts === 10 || b.pts === 9 || b.pts === 6 || b.pts === 4)){
+      G._boundaryCounts[b.batting ? 'you' : 'cpu'] = (G._boundaryCounts[b.batting ? 'you' : 'cpu'] || 0) + 1;
+    }
     // Bowling figures: only when opponent is batting (you bowl)
     if(!b.batting){
       if(!_bowlFigs) _resetBowlFigs();
@@ -14226,6 +14697,13 @@ onResultShown = function(){
     h.replay = _matchBallLog.map(b=>({y:b.you,c:b.cpu,o:b.out?1:0,t:b.type,p:b.pts,i:b.inning,m:b.mode,b:b.batting?1:0}));
     h.bowlFigs = _matchBowlFigs.slice();
     h.batFigs  = _matchBatFigs.slice();
+    // Preserve authoritative innings/wicket arrays for TEST result cards.
+    // The per-ball replay is great for charts, but declarations/draw paths can
+    // make derived wicket totals look wrong in the summary boxes.
+    h.yourInnings = (G.yourInnings||[]).slice();
+    h.cpuInnings  = (G.cpuInnings ||[]).slice();
+    h.yourWkts    = (G.yourWkts   ||[]).slice();
+    h.cpuWkts     = (G.cpuWkts    ||[]).slice();
     // Capture per-match settings so the replay can recompute targets / WPB caps
     try{
       h.maxBalls = (G.mode==='B10') ? 10 :
@@ -14320,14 +14798,17 @@ function renderScorecardExtras(){
     if(h.batFigs && h.batFigs.length){
       const yourInns = h.batFigs.filter(f=>f.who==='you');
       if(yourInns.length){
-        const runs  = yourInns.reduce((s,f)=>s+(f.runs ||0), 0);
+        const authYourInns = (h.yourInnings && h.yourInnings.length) ? h.yourInnings : null;
+        const authYourWkts = (h.yourWkts && h.yourWkts.length) ? h.yourWkts : null;
+        const runs  = authYourInns ? authYourInns.reduce((s,v)=>s+(v||0),0) : yourInns.reduce((s,f)=>s+(f.runs ||0), 0);
         const balls = yourInns.reduce((s,f)=>s+(f.balls||0), 0);
-        const wkts  = yourInns.reduce((s,f)=>s+(f.wkts ||0), 0);
+        const wkts  = authYourWkts ? authYourWkts.reduce((s,v)=>s+(v||0),0) : yourInns.reduce((s,f)=>s+(f.wkts ||0), 0);
         const sixes = yourInns.reduce((s,f)=>s+(f.sixes||0), 0);
         const sr    = balls>0 ? Math.round((runs/balls)*100) : 0;
         const maxW  = (typeof h.maxWkts === 'number' && h.maxWkts>0) ? h.maxWkts : 1;
-        // Denominator scales with innings count (so TEST shows 2/20 etc.)
-        const wktsDenom = maxW * yourInns.length;
+        // Denominator scales with actual batting innings played in TEST.
+        const inningsPlayed = authYourInns ? authYourInns.length : yourInns.length;
+        const wktsDenom = maxW * inningsPlayed;
         const figureLine = `${runs}/${wkts}` + (maxW>1 ? `<span style="opacity:0.5;font-size:0.6em"> /${wktsDenom}</span>` : '');
         host.insertAdjacentHTML('beforeend', `
           <div class="sc-mini">
@@ -14348,9 +14829,6 @@ function renderScorecardExtras(){
       const ballsAsObjs = h.replay.map(b => ({
         pts: b.p||0, out: !!b.o, batting: !!b.b, inning: b.i
       }));
-      // YOU batted: keep balls where batting===true (you bat → b.b===1 stored as 1)
-      const youBalls = ballsAsObjs.filter(b => b.batting);
-      const cpuBalls = ballsAsObjs.filter(b => !b.batting);
       const drawMh = (balls, title)=>{
         if(!balls.length) return;
         const bars = Scorecard.fromBalls(balls, {ballsPerOver:6});
@@ -14360,8 +14838,28 @@ function renderScorecardExtras(){
         host.appendChild(mh);
         Scorecard.renderManhattan(mh, bars, {title, mode:h.mode, minOvers:MIN});
       };
-      drawMh(youBalls, 'YOUR INNINGS · MANHATTAN');
-      drawMh(cpuBalls, 'CPU INNINGS · MANHATTAN');
+      if((h.mode||'').toUpperCase().indexOf('TEST') >= 0){
+        // TEST has up to four innings. Render them separately instead of
+        // merging both of YOUR innings into one chart and both CPU innings into
+        // one chart, which made the result page look like the innings count was
+        // wrong.
+        const labels = {};
+        const sideCount = {you:0, cpu:0};
+        Array.from(new Set(ballsAsObjs.map(b=>b.inning))).sort((a,b)=>a-b).forEach(i=>{
+          const group = ballsAsObjs.filter(b=>b.inning===i);
+          if(!group.length) return;
+          const side = group[0].batting ? 'you' : 'cpu';
+          sideCount[side]++;
+          labels[i] = (side==='you'?'YOUR':'CPU') + ' ' + (sideCount[side]===1?'1ST':'2ND') + ' INNINGS · MANHATTAN';
+          drawMh(group, labels[i]);
+        });
+      } else {
+        // YOU batted: keep balls where batting===true (you bat → b.b===1 stored as 1)
+        const youBalls = ballsAsObjs.filter(b => b.batting);
+        const cpuBalls = ballsAsObjs.filter(b => !b.batting);
+        drawMh(youBalls, 'YOUR INNINGS · MANHATTAN');
+        drawMh(cpuBalls, 'CPU INNINGS · MANHATTAN');
+      }
     }
 
     // ── Bowling figures (full table for both YOU and CPU) ──
@@ -15723,9 +16221,282 @@ setInterval(()=>{
 // Uses the same mode rules. No powerplay. Each side bats exactly 6 balls or
 // until OUT — higher score wins. Tracks via G._superOver and G._superOverScores.
 
+
+function clearSuperOverTopBadge(){
+  try{
+    const root = document.getElementById('sp-root');
+    const badge = document.getElementById('sp_so-top-badge');
+    if(root) root.classList.remove('so-page-invert');
+    if(badge){ badge.style.display='none'; badge.textContent=''; }
+  }catch(_){}
+}
+window.clearSuperOverTopBadge = clearSuperOverTopBadge;
+function setSuperOverTopBadge(round){
+  try{
+    const root = document.getElementById('sp-root');
+    const badge = document.getElementById('sp_so-top-badge');
+    if(!badge) return;
+    const r = Math.max(1, round||1);
+    badge.innerHTML = r >= 2 ? '⚡ SUPER-OVER<sup>2</sup> ⚡' : '⚡ SUPER-OVER ⚡';
+    badge.style.display = 'inline-block';
+    // Restart drop animation on each enforced SO.
+    badge.style.animation = 'none';
+    void badge.offsetHeight;
+    badge.style.animation = '';
+    if(root) root.classList.add('so-page-invert');
+  }catch(_){}
+}
+function _seasonRankFor(id){
+  try{
+    const s = window.Season && Season.active && Season.active();
+    const std = (s && s.standings && s.standings.length) ? s.standings : (Season.standings ? Season.standings(s) : []);
+    const i = std.findIndex(r=>r.id===id);
+    return i>=0 ? i+1 : '—';
+  }catch(_){ return '—'; }
+}
+function showSeasonTiebreakPage(payload){
+  try{
+    clearSuperOverTopBadge();
+    const p = payload || {};
+    const youName = 'YOU';
+    let cpuName = 'CPU';
+    try{
+      const opp = p.fix && (p.fix.p1===Season.PLAYER ? p.fix.p2 : p.fix.p1);
+      cpuName = Season.shortName ? Season.shortName(opp) : 'CPU';
+    }catch(_){}
+    const title = document.getElementById('sp_tb-title');
+    const heavy = document.getElementById('sp_tb-heavy');
+    const sub = document.getElementById('sp_tb-sub');
+    const body = document.getElementById('sp_tb-body');
+    const winnerEl = document.getElementById('sp_tb-winner');
+    const yn = document.getElementById('sp_tb-you-name');
+    const cn = document.getElementById('sp_tb-cpu-name');
+    if(yn) yn.textContent = youName;
+    if(cn) cn.textContent = cpuName;
+    const youWin = !!p.youWin;
+    const reason = p.reason || 'TABLE POSITION';
+    if(title) title.textContent = reason === 'BOUNDARY COUNT' ? 'THE COUNTBACK' : 'THE TABLE SPEAKS';
+    if(heavy) heavy.textContent = reason === 'BOUNDARY COUNT' ? 'HEAVY HITS' : 'STANDING';
+    if(sub) sub.textContent = reason === 'BOUNDARY COUNT'
+      ? 'Two Super Overs could not split them. The 10/9/6/4 count has been placed on the table.'
+      : 'Even the countback is level. The higher league-table standing now carries the weight.';
+    const so = p.superOvers || [];
+    const so1 = so[0] || {};
+    const so2 = so[1] || {};
+    const yRank = p.youRank || '—', cRank = p.cpuRank || '—';
+    const rows = [
+      ['Original match', p.baseYouScore, p.baseCpuScore, null],
+      ['Super-over 1', so1.you ?? 'TIE', so1.cpu ?? 'TIE', null],
+      ['Super-over²', so2.you ?? 'TIE', so2.cpu ?? 'TIE', null],
+      ['10/9/6/4 count', p.youBoundaries||0, p.cpuBoundaries||0, reason === 'BOUNDARY COUNT'],
+      ['Table standing', '#'+yRank, '#'+cRank, reason === 'TABLE POSITION']
+    ];
+    if(body){
+      body.innerHTML = rows.map(r=>{
+        const mark = r[3];
+        const yCls = (mark && youWin) ? ' class="tb-win"' : '';
+        const cCls = (mark && !youWin) ? ' class="tb-win"' : '';
+        return `<tr><td>${r[0]}</td><td${yCls}>${r[1]}</td><td${cCls}>${r[2]}</td></tr>`;
+      }).join('');
+    }
+    if(winnerEl) winnerEl.textContent = (youWin ? 'YOU ADVANCE' : cpuName.toUpperCase() + ' ADVANCES') + ' · ' + reason;
+    SP.show('season-tiebreak');
+  }catch(e){ console.warn('tiebreak page err', e); }
+}
+
+function _rollbackLatestSPResult(){
+  const G = SP._G(); if(!G || !G.history || !G.history.length) return;
+  const h = G.history.shift();
+  const m = (h.mode || G.mode || '').replace(/\s*\(SO\)\s*$/,'');
+  if(h.result === 'WIN'){
+    G.wins = Math.max(0, (G.wins||0)-1);
+    if(G.modeStats[m]) G.modeStats[m].wins = Math.max(0, (G.modeStats[m].wins||0)-1);
+  } else if(h.result === 'LOSE'){
+    G.losses = Math.max(0, (G.losses||0)-1);
+    if(G.modeStats[m]) G.modeStats[m].losses = Math.max(0, (G.modeStats[m].losses||0)-1);
+  } else if(h.result === 'TIE'){
+    G.ties = Math.max(0, (G.ties||0)-1);
+    if(G.modeStats[m]) G.modeStats[m].ties = Math.max(0, (G.modeStats[m].ties||0)-1);
+  }
+}
+function _applySPTiebreakWinner(youWin, text){
+  const G = SP._G(); if(!G) return;
+  const mode = G._superOverMode || G.mode;
+  const h = G.history && G.history[0];
+  if(h && h.result === 'TIE'){
+    G.ties = Math.max(0, (G.ties||0)-1);
+    if(G.modeStats[mode]) G.modeStats[mode].ties = Math.max(0, (G.modeStats[mode].ties||0)-1);
+    if(youWin){
+      G.wins = (G.wins||0)+1; G.streak = G.streak>0 ? G.streak+1 : 1;
+      if(G.modeStats[mode]) G.modeStats[mode].wins = (G.modeStats[mode].wins||0)+1;
+      h.result = 'WIN';
+    } else {
+      G.losses = (G.losses||0)+1; G.streak = G.streak<0 ? G.streak-1 : -1;
+      if(G.modeStats[mode]) G.modeStats[mode].losses = (G.modeStats[mode].losses||0)+1;
+      h.result = 'LOSE';
+    }
+    h.margin = 0;
+  }
+  if(h){ h.superOver = true; h.mode = mode + ' (SO)'; h.tiebreaker = text || 'PLAYOFF TIEBREAK'; }
+  const heading = document.getElementById('sp_result-heading');
+  const margin  = document.getElementById('sp_result-margin');
+  if(heading){ heading.textContent = youWin ? '⚡ PLAYOFF WON ⚡' : '⚡ PLAYOFF LOST'; heading.className = youWin ? 'win' : 'lose'; }
+  if(margin) margin.textContent = text || 'PLAYOFF TIEBREAK';
+  try{
+    document.getElementById('sp_stat-wins').textContent=G.wins;
+    document.getElementById('sp_stat-losses').textContent=G.losses;
+    document.getElementById('sp_stat-ties').textContent=G.ties;
+  }catch(_){}
+}
+function _spSeasonHigherSeedIsYou(fix){
+  try{
+    const s = window.Season && Season.active();
+    const winner = _seasonHigherSeedWinner(s, fix.p1, fix.p2);
+    return winner === window.Season.PLAYER;
+  }catch(_){ return true; }
+}
+function _startSeasonPlayoffSuperOver(firstBattingYou){
+  const G = SP._G(); if(!G) return;
+  cancelAutoCountdown();
+  document.querySelectorAll('.so-banner').forEach(b=>b.remove());
+  _rollbackLatestSPResult();
+  G._superOver = true;
+  G._superOverScores = {you:null, cpu:null};
+  G._superOverMode = G._superOverMode || G.mode;
+  G.yourInnings = []; G.cpuInnings = [];
+  G.yourWkts = []; G.cpuWkts = [];
+  G.score = 0; G.balls = 0;
+  G.chase = null; G.lastNum = null; G.repeatCount = 0;
+  G.ballLog = [];
+  G.inputLocked = false; G.inningClosing = false;
+  G.followOnEnforced = false;
+  G.youBatFirst = !!firstBattingYou;
+  G.innBreakCallback = null;
+  G._maxWickets = 1;
+  G._maxBalls = 6;
+  setSuperOverTopBadge((window.__seasonLaunched && window.__seasonLaunched._seasonPlayoffSO && window.__seasonLaunched._seasonPlayoffSO.round) || 1);
+  Sound.bonus && Sound.bonus();
+  window.toast && toast('⚡ Playoff tie: Super Over enforced!', 'good', 2600);
+  try{ SP.startInning(!!firstBattingYou, null); }catch(e){ console.warn('season SO start err', e); }
+}
+function _completeSeasonPlayoffFixture(finalWinnerIsYou, tiebreakText){
+  const G = SP._G(); if(!G || !window.__seasonLaunched || !window.Season) return;
+  const fix = window.__seasonLaunched;
+  window.__seasonLaunched = null;
+  const isP1User = (fix.p1 === window.Season.PLAYER);
+  const winner = finalWinnerIsYou ? window.Season.PLAYER : (isP1User ? fix.p2 : fix.p1);
+  const p1Score = fix.baseP1Score|0, p2Score = fix.baseP2Score|0;
+  const p1Balls = fix.baseP1Balls|0, p2Balls = fix.baseP2Balls|0;
+  window.Season.applyMatchResult({
+    fixtureIdx: fix.fixtureIdx,
+    p1Score, p2Score, p1Balls, p2Balls,
+    winner,
+    tiebreaker:{reason:tiebreakText||'SUPER OVER', winner}
+  });
+  _applySPTiebreakWinner(finalWinnerIsYou, tiebreakText || 'PLAYOFF SUPER OVER');
+  G._superOver = false;
+  G._superOverScores = null;
+  G._seasonPlayoffSO = null;
+  G._superOverMode = null;
+  clearSuperOverTopBadge();
+  try{
+    if(fix.prevWickets != null && typeof window.__setSelectedWickets === 'function') window.__setSelectedWickets(fix.prevWickets);
+    if(fix.prevBalls   != null && typeof window.__setSelectedBalls   === 'function') window.__setSelectedBalls(fix.prevBalls);
+  }catch(_){}
+  try{
+    if(G.history && G.history[0]){
+      const seasonId = window.Season.active() && window.Season.active().id;
+      G.history[0].seasonId = seasonId || ('season:' + (fix.fixtureIdx||0));
+      G.history[0].fixtureIdx = fix.fixtureIdx;
+    }
+  }catch(_){}
+  try{
+    if(window.Progress){
+      const mult = window.Season.stageXpMult(fix.stage) - 1;
+      if(mult > 0) window.Progress.award(Math.round(80 * mult), 'Season ' + (fix.stage||'').toUpperCase() + ' bonus');
+    }
+  }catch(_){}
+  window.__justPlayedSeasonMatch = true;
+  setTimeout(()=>{
+    try{
+      const s = window.Season.lastFinished && window.Season.lastFinished();
+      if(s && s.finishedAt && (Date.now() - s.finishedAt) < 5000) showSeasonTrophyScreen(s);
+    }catch(_){}
+  }, 1200);
+  try{ if(window.SP && SP.toggleSeasonResultActions) SP.toggleSeasonResultActions(); }catch(_){}
+  window.persistUserFromSP && window.persistUserFromSP();
+}
+function _handleSeasonPlayoffSOResult(){
+  const G = SP._G();
+  const fix = window.__seasonLaunched;
+  if(!G || !fix || !fix._seasonPlayoffSO) return false;
+  const y = G.yourInnings[0] || 0;
+  const c = G.cpuInnings[0] || 0;
+  const round = fix._seasonPlayoffSO.round || 1;
+  fix._seasonPlayoffSO.superOvers = fix._seasonPlayoffSO.superOvers || [];
+  fix._seasonPlayoffSO.superOvers[round-1] = {round, you:y, cpu:c};
+
+  if(y !== c){
+    _completeSeasonPlayoffFixture(y > c, `SUPER OVER ${round} · YOU ${y}–${c} CPU`);
+    return true;
+  }
+  if(round < 2){
+    fix._seasonPlayoffSO.round = round + 1;
+    const nextFirstBattingYou = !!G.batting; // side that just batted continues
+    window.toast && toast('⚡ Super Over tied — another Super Over!', 'good', 2600);
+    setTimeout(()=>_startSeasonPlayoffSuperOver(nextFirstBattingYou), 0);
+    return true;
+  }
+
+  // Two Super Overs are tied: move to the epic comparison page.
+  const bc = G._boundaryCounts || {you:0,cpu:0};
+  let reason = 'BOUNDARY COUNT';
+  let youWin;
+  if((bc.you||0) !== (bc.cpu||0)){
+    youWin = (bc.you||0) > (bc.cpu||0);
+  } else {
+    reason = 'TABLE POSITION';
+    youWin = _spSeasonHigherSeedIsYou(fix);
+  }
+  const isP1User = fix.p1 === window.Season.PLAYER;
+  const payload = {
+    fix,
+    youWin,
+    reason,
+    baseYouScore: isP1User ? fix.baseP1Score : fix.baseP2Score,
+    baseCpuScore: isP1User ? fix.baseP2Score : fix.baseP1Score,
+    superOvers: fix._seasonPlayoffSO.superOvers.slice(),
+    youBoundaries: bc.you||0,
+    cpuBoundaries: bc.cpu||0,
+    youRank: _seasonRankFor(window.Season.PLAYER),
+    cpuRank: _seasonRankFor(isP1User ? fix.p2 : fix.p1)
+  };
+  _completeSeasonPlayoffFixture(youWin, reason === 'BOUNDARY COUNT'
+    ? `BOUNDARY COUNT (10/9/6/4) · YOU ${bc.you||0}–${bc.cpu||0} CPU`
+    : 'TABLE POSITION TIEBREAK');
+  setTimeout(()=>showSeasonTiebreakPage(payload), 80);
+  return true;
+}
+function _maybeStartSeasonPlayoffSOFromResult(fix, p1Score, p2Score, p1Balls, p2Balls){
+  if(!fix || !_seasonIsPlayoffStage(fix.stage) || p1Score !== p2Score) return false;
+  const G = SP._G(); if(!G) return false;
+  fix.baseP1Score = p1Score; fix.baseP2Score = p2Score;
+  fix.baseP1Balls = p1Balls; fix.baseP2Balls = p2Balls;
+  fix._seasonPlayoffSO = { round:1 };
+  const firstBattingYou = !!G.batting; // tied innings batter continues
+  setTimeout(()=>_startSeasonPlayoffSuperOver(firstBattingYou), 0);
+  return true;
+}
+
 function offerSuperOver(){
   const G = SP._G();
   if(!G || G._superOver) return; // already in one — don't recurse
+  // Season mode has its own tie handling: league matches may remain tied,
+  // playoffs enforce Super Overs automatically. Never show the manual Nets
+  // Super Over offer for Season fixtures.
+  try{
+    if(window.__seasonLaunched || window.__justPlayedSeasonMatch || (G.history && G.history[0] && G.history[0].seasonId)) return;
+  }catch(_){}
   // Only on the result screen, and only on TIE
   const heading = document.getElementById('sp_result-heading');
   if(!heading || heading.textContent.trim() !== 'TIED') return;
@@ -15771,6 +16542,7 @@ function startSuperOver(){
   G._superOver = true;
   G._superOverScores = {you: null, cpu: null};
   G._superOverMode = G.mode;
+  setSuperOverTopBadge(1);
   // Roll back the TIE that was just recorded (we'll record a fresh result after the super over)
   if(G.history[0] && G.history[0].result === 'TIE'){
     G.history.shift();
@@ -15813,13 +16585,22 @@ onResultShown = function(){
   _origOnResultShown();
   const G = SP._G();
   if(!G) return;
+  if(window.__seasonLaunched && window.__seasonLaunched._seasonPlayoffSO) return;
   // If we ARE in a super over and this is the SO's result — finalize
   if(G._superOver && G._superOverScores){
     finaliseSuperOver();
     return;
   }
-  // Otherwise: maybe offer one
-  setTimeout(offerSuperOver, 700);
+  // Otherwise: maybe offer one. Also clear any stale banner if this result
+  // is not actually tied.
+  setTimeout(()=>{
+    const h = document.getElementById('sp_result-heading');
+    if(!h || h.textContent.trim() !== 'TIED'){
+      document.querySelectorAll('#sp_screen-result .so-banner').forEach(b=>b.remove());
+      return;
+    }
+    offerSuperOver();
+  }, 700);
 };
 
 function finaliseSuperOver(){
@@ -15857,6 +16638,7 @@ function finaliseSuperOver(){
   G._superOver = false;
   G._superOverScores = null;
   G._superOverMode = null;
+  clearSuperOverTopBadge();
   window.persistUserFromSP && window.persistUserFromSP();
 }
 
@@ -16211,5 +16993,5 @@ startTextureAnimation();
 </div>
 
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a08874860ec5498d',t:'MTc4MDkyNzU2NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a08874860ec5498d',t:'MTc4MDkyNzU2NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a091cfa00c237f50',t:'MTc4MTAyNTY2OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
