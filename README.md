@@ -1,221 +1,269 @@
 # Computer Cricket
 
-An interactive cricket simulation available in three forms — a Python CLI game, a single-player web app, and a real-time multiplayer tournament platform — all built around the same hand-cricket number mechanics.
+<p align="center">
+  <a href="https://gvaishanth.github.io/Computer-Cricket/game.html"><strong>▶ Play the latest build</strong></a>
+  &nbsp;•&nbsp;
+  <a href="https://github.com/GVaishanth/Computer-Cricket"><strong>GitHub repository</strong></a>
+</p>
+
+<p align="center">
+  A modern hand-cricket project with solo play, season mode, career progression, achievements,
+  and real-time multiplayer tournaments — all built around one simple idea: pick a number, read the moment, and beat the computer or your friends.
+</p>
+
+<p align="center">
+  <img src="assets/screenshots/Home%20screen.png" alt="Computer Cricket home screen" width="92%">
+</p>
 
 ---
 
-## Overview
-
-Computer Cricket is a number-based cricket game where players compete by selecting numbers each ball. The game simulates real cricket concepts: toss, innings, scoring, wickets, and match outcomes using custom rule sets across seven distinct game modes.
-
-The project covers **game logic design**, **user interaction**, **modular programming**, and **real-time peer-to-peer networking**.
-
----
-
-## Files
-
-| File | Description |
-|---|---|
-| `COMPUTER_CRICKET.py` | Original Python CLI game |
-| `computer_cricket.html` | Single-player web version with themes and UI |
-| `cricket_multiplayer.html` | Real-time multiplayer tournament platform |
+## Table of Contents
+- [Live Demo](#live-demo)
+- [What the project includes](#what-the-project-includes)
+- [Current highlights](#current-highlights)
+- [Game modes](#game-modes)
+- [Screenshot gallery](#screenshot-gallery)
+- [How to run](#how-to-run)
+- [Project structure](#project-structure)
+- [Tech stack](#tech-stack)
+- [Notes and limitations](#notes-and-limitations)
+- [Roadmap](#roadmap)
+- [Author](#author)
 
 ---
 
-## Game Modes
+## Live Demo
 
-All three versions share the same seven modes:
+### Latest recommended build
+- **Unified browser version:** [gvaishanth.github.io/Computer-Cricket/game.html](https://gvaishanth.github.io/Computer-Cricket/game.html)
 
-| Mode | Numbers | Rule |
+### Repository
+- **Source code:** [github.com/GVaishanth/Computer-Cricket](https://github.com/GVaishanth/Computer-Cricket)
+
+### Important note
+The current flagship version of the project is **`game.html`**.
+It combines the solo experience (**The Nets**), multiplayer (**The League**), progression, achievements, tutorial, history, and season mode into one interface.
+
+### Builds at a glance
+
+| Entry point | What it contains | Status |
+|---|---|---|
+| `game.html` | Latest all-in-one browser build | **Recommended** |
+| `computer_cricket.html` | Earlier standalone single-player web build | Legacy |
+| `cricket_multiplayer.html` | Earlier standalone multiplayer web build | Legacy |
+| `COMPUTER_CRICKET.py` | Original terminal version | Classic |
+
+---
+
+## What the project includes
+
+### 1) The Nets — solo mode
+A polished single-player hand-cricket experience against a ladder of CPU opponents, with multiple modes, toss flow, live scoreboards, innings breaks, history, and replay support.
+
+### 2) The League — multiplayer mode
+A real-time peer-to-peer tournament lobby where players can create rooms, share codes, chat, build brackets, and play live matches.
+
+### 3) Season Mode
+An IPL-style solo tournament against bots with league matches, table tracking, fixtures, playoffs, and inter-bot simulation.
+
+### 4) Progression system
+Local player profiles with XP, levels, daily tasks, weekly tasks, career stats, per-mode records, per-opponent breakdowns, and unlockable achievements.
+
+### 5) Original CLI version
+The root idea of the project in Python: a playable terminal version with the same hand-cricket number mechanics.
+
+---
+
+## Current highlights
+
+### Core gameplay
+- **7 game modes**: `NORMAL`, `CRAZY`, `INSANE`, `MAD`, `NOWAY`, `B10`, `TEST`
+- Toss flow with bat/bowl choice
+- Batting and bowling scoreboards
+- Match commentary, momentum, recent-ball tracking, and live required-rate information
+- Standard matches, short formats, and full **TEST** matches with multi-innings flow
+
+### Solo experience — The Nets
+- **8 CPU opponents** across difficulty tiers:
+  - The Rookie
+  - The Tail-ender
+  - The Slogger
+  - The All-Rounder
+  - The Strategist
+  - The Anchor
+  - The Wicket Keeper
+  - The Demon
+- Daily challenge card on the Nets home screen
+- Match history with recent results
+- Rewatch support for saved matches
+- Personal bests shown per mode
+
+### Progression and profile
+- Local named player profiles
+- XP and level system
+- Skill/profile radar view
+- Daily tasks and weekly tasks
+- Career stats by mode and by opponent
+- **77 achievements** currently defined in the game
+- Career snapshot and win/loss/tie tracking
+
+### Season Mode
+- Pick **3 to 8 bots**
+- Configure matches per pair
+- Choose league mode, wickets, and balls per innings
+- League table, fixtures, playoffs, and season hub
+- Fast-forward or watch inter-bot games
+
+### Multiplayer — The League
+- Real-time **PeerJS / WebRTC** room-based multiplayer
+- Shareable **6-character room codes**
+- Create room / join room flow
+- Solo or team tournament formats
+- Room chat, table view, and lobby controls
+- Live tournament structure and host-managed flow
+
+### Onboarding
+- Interactive tutorial
+- Player profile / toss-luck quiz
+- In-game settings and sound controls
+
+---
+
+## Game modes
+
+| Mode | Numbers | Rule summary |
 |---|---|---|
 | **NORMAL** | 1–10 | Same = OUT · Other = ADD |
 | **CRAZY** | 1–10 | Same = ADD your number² · Adjacent = OUT · Other = ADD |
-| **INSANE** | 1–10 | Same = OUT · Adjacent = MULTIPLY (you × cpu) · Other = ADD |
-| **MAD** | 1–10 | Same = ADD (you + cpu) · Adjacent = OUT · Other = MULTIPLY |
+| **INSANE** | 1–10 | Same = OUT · Adjacent = MULTIPLY · Other = ADD |
+| **MAD** | 1–10 | Same = ADD both numbers · Adjacent = OUT · Other = MULTIPLY |
 | **NOWAY** | 1–10 | Same = MULTIPLY · Adjacent = ADD · Other = OUT |
-| **B10** | 7–10 | Same = OUT · Other = ADD · 10 balls only |
-| **TEST** | 1–6 | Same = OUT · 2 innings per side · Follow-on at 150-run deficit |
+| **B10** | 7–10 | Same = OUT · Other = ADD · 10-ball sprint |
+| **TEST** | 1–6 | Same = OUT · Multi-innings match format |
 
 ---
 
-## Python CLI — `COMPUTER_CRICKET.py`
+## Screenshot gallery
 
-### Features
-- Toss system with Heads/Tails call and Bat/Bowl decision
-- All 7 game modes fully implemented
-- **TEST mode** — 2 innings per side, follow-on rule, win by an innings
-- **B10 mode** — 10-ball match, restricted number pool (7–10)
-- Player type detection quiz (Batsman / Bowler / All-rounder) that influences toss outcomes
-- Input validation — out-of-range numbers clamped, non-numeric input replaced with random
-- Tie-breaker system using a randomly selected mode
-- Post-game menu: Continue, Change Mode, Random, Quit
-- Mode banners showing rules at the start of each game
-- 25 functions, ~625 lines
+### Home, onboarding, and progression
 
-### How to Run
+<p align="center">
+  <img src="assets/screenshots/Home%20screen.png" alt="Home screen" width="48%">
+  <img src="assets/screenshots/Tutorial.png" alt="Tutorial" width="48%">
+</p>
+<p align="center">
+  <img src="assets/screenshots/Nets%20quiz.png" alt="Nets quiz" width="48%">
+  <img src="assets/screenshots/Player%20profile.png" alt="Player profile" width="48%">
+</p>
+<p align="center">
+  <img src="assets/screenshots/My%20career%20page.png" alt="My career page" width="48%">
+  <img src="assets/screenshots/Achievements%20page.png" alt="Achievements page" width="48%">
+</p>
+
+### The Nets — solo mode
+
+<p align="center">
+  <img src="assets/screenshots/Nets%20home%20page.png" alt="Nets home page" width="48%">
+  <img src="assets/screenshots/Toss%20page.png" alt="Toss page" width="48%">
+</p>
+<p align="center">
+  <img src="assets/screenshots/Game%20page%20bowling.png" alt="Game page bowling" width="48%">
+  <img src="assets/screenshots/game%20page%20batting.png" alt="Game page batting" width="48%">
+</p>
+<p align="center">
+  <img src="assets/screenshots/Innings%20break.png" alt="Innings break" width="48%">
+  <img src="assets/screenshots/Results%20page.png" alt="Results page" width="48%">
+</p>
+<p align="center">
+  <img src="assets/screenshots/HIstory%20page.png" alt="History page" width="48%">
+  <img src="assets/screenshots/Season%20home%20page.png" alt="Season home page" width="48%">
+</p>
+<p align="center">
+  <img src="assets/screenshots/Season%20start%20page.png" alt="Season start page" width="70%">
+</p>
+
+### The League — multiplayer mode
+
+<p align="center">
+  <img src="assets/screenshots/Multiplayer%20home%20page.png" alt="Multiplayer home page" width="48%">
+  <img src="assets/screenshots/Create%20room%20page.png" alt="Create room page" width="48%">
+</p>
+<p align="center">
+  <img src="assets/screenshots/Join%20room%20page.png" alt="Join room page" width="48%">
+  <img src="assets/screenshots/Inside%20room.png" alt="Inside room page" width="48%">
+</p>
+
+---
+
+## How to run
+
+### Play online
+Open the latest public build here:
+- [https://gvaishanth.github.io/Computer-Cricket/game.html](https://gvaishanth.github.io/Computer-Cricket/game.html)
+
+### Run locally in a browser
+Clone the repository and open `game.html`:
+
+```bash
+git clone https://github.com/GVaishanth/Computer-Cricket.git
+cd Computer-Cricket
+```
+
+Then open:
+- `game.html` for the latest unified version
+- `computer_cricket.html` for the older standalone solo version
+- `cricket_multiplayer.html` for the older standalone multiplayer version
+
+### Run the Python version
 ```bash
 python COMPUTER_CRICKET.py
 ```
 
-### How to Play
-1. Complete the optional player type quiz (or skip)
-2. Choose a game mode: `NORMAL | CRAZY | INSANE | MAD | NOWAY | B10 | TEST`
-3. Win the toss and choose to Bat or Bowl
-4. Enter numbers each ball — rules vary by mode
-5. Defend or chase the target in the second innings
+---
+
+## Project structure
+
+```text
+COMPUTER_CRICKET.py          Original Python CLI game
+computer_cricket.html        Earlier standalone single-player web build
+cricket_multiplayer.html     Earlier standalone multiplayer web build
+game.html                    Latest unified browser version
+assets/screenshots/          README screenshots
+README.md                    Project documentation
+```
 
 ---
 
-## Single-Player Web — `computer_cricket.html`
-
-A fully featured browser game. No install required — just open in any browser.
-
-### Features
-- All 7 game modes with correct rules
-- **National team colour themes** — each mode switches the entire UI to its team's 3-colour palette:
-  - Home/Lobby → Afghanistan (Navy · Red · Blue)
-  - NORMAL → New Zealand (Black · White · Silver)
-  - CRAZY → Australia (Green · Gold · Navy)
-  - INSANE → India (Navy · Saffron · Green)
-  - MAD → West Indies (Maroon · Gold · Dark Red)
-  - NOWAY → England (Navy · Red · White)
-  - B10 → South Africa (Green · Gold · Red)
-  - TEST → Classic Whites (Cream · Navy · Sepia)
-- **Luck quiz** — 10-round number quiz determines player type, influences toss outcomes
-- **Difficulty system** — Easy (CPU avoids your number) / Normal / Hard (CPU targets your number)
-- **Between-innings summary card** — shows scores, target, and who bats next before continuing
-- **Live stats row** — run rate, runs needed per ball, innings number
-- **Last 6 balls log** — coloured dot row showing each ball outcome
-- **Ball-by-ball commentary** — mode-specific flavour text for every outcome type
-- **Session stats** — wins, losses, ties, high score, personal best per mode, win streak
-- **Match history** — last 30 matches with mode, difficulty, scores, margin
-- **Per-mode personal best** displayed on mode select cards
-- **TEST mode** — full 4-innings match, follow-on at 150-run deficit, win by an innings
-- **Keyboard input** — 1–9 and 0 for 10
-- Back-to-menu button on all screens
-- 52 JS functions, 57 KB
-
----
-
-## Multiplayer — `cricket_multiplayer.html`
-
-A real-time tournament platform. No server, no account — just share a 6-character room code.
-
-### Network
-Uses **PeerJS** (WebRTC) via the free public `0.peerjs.com` signalling server. Works cross-device over the internet. The host is the single source of truth; all state is broadcast to every connected player.
-
-### Room Setup (Host)
-- Room size: 2–12 players
-- Wickets per innings (1–10)
-- Balls per innings (0 = unlimited)
-- Timer per ball: 3–15 seconds (host configures)
-- Match type: Solo (1v1) or Team (2 teams)
-- Gameplay mode: Single (fixed), Double (2 modes random per match), Random (any mode)
-
-### Tournament Format — IPL Style
-- **League stage** — every player/team plays every other twice
-- **Points table** — 2 pts per win, NRR as tiebreaker
-- **Knockouts** — top 4 advance: Qualifier 1 (1v2), Eliminator (3v4), Qualifier 2, Final
-- Host can launch the next match from lobby or result screen
-
-### Match Flow
-1. **Match entry screen** — matched players choose to Enter Match or Forfeit (walkover win)
-2. **Toss** — coin flip with call; loser's outcome influenced by player type from luck quiz
-3. **Bat/Bowl choice** — toss winner decides
-4. **Playing** — configurable countdown timer per ball; both players lock numbers simultaneously
-5. **Reveal** — both numbers shown for 1 second before next ball
-6. **Unpicked = 0** — if a player doesn't lock before timer, their number defaults to 0
-7. **Innings break** — 3.5-second break with target info before second innings
-8. **Result** — winner, scores, margin, mode played; host sees Next Match button
-
-### TEST Mode (Multiplayer)
-- 4 innings total — each side bats twice
-- Normal order: A bats → B bats → A bats → B chases
-- Follow-on enforced automatically at 150-run deficit
-- Win by an innings checked after follow-on innings
-- Live innings tracker shows all 4 innings with running totals
-
-### Team Match
-- Computer randomly selects 2 captains
-- Captains alternate picking players (live draft)
-- Captain selects bowler before each over
-- Bowler over limit enforced (total overs ÷ bowlers × 2)
-
-### Spectating
-- All non-playing players watch live
-- Locked numbers shown as ✓ until both players lock, then revealed simultaneously
-- Reaction buttons: 🎉 YAY!! · 👎 BOO!! · 😮 NOOO!! · 🏏 HOWZAT! · 6️⃣ SIX! · 🔥 ON FIRE! · 🦆 DUCK!
-- Reactions float up on screen for all viewers
-
-### Lobby & Stats
-- Scrolling live ticker — current match, upcoming matches, last result
-- Lobby chat (all players) + Team chat (private per team)
-- Standings table — wins, losses, points, NRR
-- Tournament bracket — league + knockouts with live/done/upcoming status
-- Continue tournament option after final
-
-### Responsive Layout
-- **Mobile** — stacked: match → upcoming → ticker → chat → stats
-- **Desktop** — 3-column: upcoming+standings | match | chat+bowling figures
-- Team colour themes applied to entire UI during each match
-
-### 91 JS functions, 99 KB
-
----
-
-## Technologies Used
+## Tech stack
 
 | Layer | Technology |
 |---|---|
-| CLI game | Python 3 — `random`, `time` |
-| Web UI | HTML5 · CSS3 (custom properties, grid, animations) |
-| Web logic | Vanilla JavaScript (ES6+) |
-| Real-time networking | PeerJS 1.5.4 (WebRTC) |
-| Fonts | Google Fonts — Bebas Neue, Rajdhani, Share Tech Mono |
+| Core CLI | Python 3 |
+| Frontend | HTML5, CSS3, Vanilla JavaScript |
+| Multiplayer transport | PeerJS 1.5.4, WebRTC |
+| Storage | Browser localStorage for local profiles and progress |
+| Fonts | Google Fonts (`Bebas Neue`, `Rajdhani`, `Share Tech Mono`) |
 
 ---
 
-## Deployment — GitHub Pages
+## Notes and limitations
 
-1. Create a GitHub repository
-2. Upload `computer_cricket.html` and `cricket_multiplayer.html` to the root
-3. Go to **Settings → Pages → Branch: main → Save**
-4. Access at:
-   - `https://yourusername.github.io/reponame/computer_cricket.html`
-   - `https://yourusername.github.io/reponame/cricket_multiplayer.html`
-
-No build step. No dependencies to install. No server needed.
+- **`game.html` is the current main version** and the best place to start.
+- Multiplayer depends on **PeerJS/WebRTC**, so some strict networks or NAT setups may block connections.
+- Progress and profiles are stored locally in the browser, so moving to another device/browser will not automatically carry data over.
+- The project uses external font/CDN resources in the browser build.
+- The CLI version is intentionally simple compared with the browser version.
 
 ---
 
-## Project Structure
+## Roadmap
 
-```
-COMPUTER_CRICKET.py          # Python CLI game (625 lines, 25 functions)
-computer_cricket.html        # Single-player web app (57 KB, 52 functions)
-cricket_multiplayer.html     # Multiplayer tournament (99 KB, 91 functions)
-README.md                    # This file
-```
-
----
-
-## Limitations
-
-- Multiplayer relies on PeerJS cloud signalling — may fail behind symmetric NAT (some corporate/school networks)
-- No persistent data — stats reset on page refresh (single-player) or when host closes tab (multiplayer)
-- CLI version is terminal-only with no GUI
-- Team mode requires at least 4 players for a meaningful draft
-
----
-
-## Future Enhancements
-
-- Persistent leaderboard using localStorage or a lightweight backend
-- Sound effects and haptic feedback on mobile
-- TURN server support for 100% NAT traversal in multiplayer
-- Replay system — save and watch ball-by-ball match replays
-- Custom game modes — user-defined rules
-- Mobile app wrapper (PWA)
+- Persistent cloud saves / leaderboard
+- Better replay browsing and export options
+- More multiplayer polish and reliability
+- Additional custom modes and tournament variations
+- Mobile/PWA refinements
+- More profile skills, tasks, and achievement tracks
 
 ---
 
