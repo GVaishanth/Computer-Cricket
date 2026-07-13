@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/GVaishanth/Computer-Cricket/main/assets/screenshots/Home%20screen.png" alt="Computer Cricket home screen" width="92%">
+  <img src="[https://raw.githubusercontent.com/GVaishanth/Computer-Cricket/main/assets/screenshots/Home%20screen.png](https://github.com/GVaishanth/Computer-Cricket/blob/main/screenshots/Home%20screen.png)" alt="Computer Cricket home screen" width="92%">
 </p>
 
 ---
