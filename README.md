@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <img src="https://github.com/GVaishanth/Computer-Cricket/blob/main/screenshots/Home%20screen.png" alt="Computer Cricket home screen" width="92%">
+  <img src="screenshots/Home%20screen.png" alt="Computer Cricket home screen" width="92%">
 </p>
 
 ---
@@ -38,6 +38,7 @@
 - **GitHub repository:** [github.com/GVaishanth/Computer-Cricket](https://github.com/GVaishanth/Computer-Cricket)
 
 ### Main entry point
+
 The current flagship build is **`game.html`**.
 
 It brings together:
@@ -159,49 +160,49 @@ The Python file preserves the original terminal version of the game and the core
 ### Home, onboarding, and progression
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/GVaishanth/Computer-Cricket/main/assets/screenshots/Home%20screen.png" alt="Home screen" width="48%">
-  <img src="https://raw.githubusercontent.com/GVaishanth/Computer-Cricket/main/assets/screenshots/Tutorial.png" alt="Tutorial" width="48%">
+  <img src="screenshots/Home%20screen.png" alt="Home screen" width="48%">
+  <img src="screenshots/Tutorial.png" alt="Tutorial" width="48%">
 </p>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/GVaishanth/Computer-Cricket/main/assets/screenshots/Nets%20quiz.png" alt="Nets quiz" width="48%">
-  <img src="https://raw.githubusercontent.com/GVaishanth/Computer-Cricket/main/assets/screenshots/Player%20profile.png" alt="Player profile" width="48%">
+  <img src="screenshots/Nets%20quiz.png" alt="Nets quiz" width="48%">
+  <img src="screenshots/Player%20profile.png" alt="Player profile" width="48%">
 </p>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/GVaishanth/Computer-Cricket/main/assets/screenshots/My%20career%20page.png" alt="My career page" width="48%">
-  <img src="https://raw.githubusercontent.com/GVaishanth/Computer-Cricket/main/assets/screenshots/Achievements%20page.png" alt="Achievements page" width="48%">
+  <img src="screenshots/My%20career%20page.png" alt="My career page" width="48%">
+  <img src="screenshots/Achievements%20page.png" alt="Achievements page" width="48%">
 </p>
 
 ### The Nets — solo mode
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/GVaishanth/Computer-Cricket/main/assets/screenshots/Nets%20home%20page.png" alt="Nets home page" width="48%">
-  <img src="https://raw.githubusercontent.com/GVaishanth/Computer-Cricket/main/assets/screenshots/Toss%20page.png" alt="Toss page" width="48%">
+  <img src="screenshots/Nets%20home%20page.png" alt="Nets home page" width="48%">
+  <img src="screenshots/Toss%20page.png" alt="Toss page" width="48%">
 </p>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/GVaishanth/Computer-Cricket/main/assets/screenshots/Game%20page%20bowling.png" alt="Game page bowling" width="48%">
-  <img src="https://raw.githubusercontent.com/GVaishanth/Computer-Cricket/main/assets/screenshots/game%20page%20batting.png" alt="Game page batting" width="48%">
+  <img src="screenshots/Game%20page%20bowling.png" alt="Game page bowling" width="48%">
+  <img src="screenshots/game%20page%20batting.png" alt="Game page batting" width="48%">
 </p>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/GVaishanth/Computer-Cricket/main/assets/screenshots/Innings%20break.png" alt="Innings break" width="48%">
-  <img src="https://raw.githubusercontent.com/GVaishanth/Computer-Cricket/main/assets/screenshots/Results%20page.png" alt="Results page" width="48%">
+  <img src="screenshots/Innings%20break.png" alt="Innings break" width="48%">
+  <img src="screenshots/Results%20page.png" alt="Results page" width="48%">
 </p>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/GVaishanth/Computer-Cricket/main/assets/screenshots/HIstory%20page.png" alt="History page" width="48%">
-  <img src="https://raw.githubusercontent.com/GVaishanth/Computer-Cricket/main/assets/screenshots/Season%20home%20page.png" alt="Season home page" width="48%">
+  <img src="screenshots/History%20page.png" alt="History page" width="48%">
+  <img src="screenshots/Season%20home%20page.png" alt="Season home page" width="48%">
 </p>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/GVaishanth/Computer-Cricket/main/assets/screenshots/Season%20start%20page.png" alt="Season start page" width="70%">
+  <img src="screenshots/Season%20start%20page.png" alt="Season start page" width="70%">
 </p>
 
 ### The League — multiplayer mode
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/GVaishanth/Computer-Cricket/main/assets/screenshots/Multiplayer%20home%20page.png" alt="Multiplayer home page" width="48%">
-  <img src="https://raw.githubusercontent.com/GVaishanth/Computer-Cricket/main/assets/screenshots/Create%20room%20page.png" alt="Create room page" width="48%">
+  <img src="screenshots/Multiplayer%20home%20page.png" alt="Multiplayer home page" width="48%">
+  <img src="screenshots/Create%20room%20page.png" alt="Create room page" width="48%">
 </p>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/GVaishanth/Computer-Cricket/main/assets/screenshots/Join%20room%20page.png" alt="Join room page" width="48%">
-  <img src="https://raw.githubusercontent.com/GVaishanth/Computer-Cricket/main/assets/screenshots/Inside%20room.png" alt="Inside room" width="48%">
+  <img src="screenshots/Join%20room%20page.png" alt="Join room page" width="48%">
+  <img src="screenshots/Inside%20room.png" alt="Inside room" width="48%">
 </p>
 
 ---
@@ -209,6 +210,7 @@ The Python file preserves the original terminal version of the game and the core
 ## How to run
 
 ### Browser
+
 Clone the repo and open the HTML file you want:
 
 ```bash
@@ -222,6 +224,7 @@ Then open one of these in your browser:
 - `cricket_multiplayer.html` → earlier multiplayer-only build
 
 ### Python CLI
+
 ```bash
 python COMPUTER_CRICKET.py
 ```
@@ -248,7 +251,7 @@ COMPUTER_CRICKET.py           Original Python CLI version
 computer_cricket.html         Earlier standalone single-player build
 cricket_multiplayer.html      Earlier standalone multiplayer build
 game.html                     Latest unified browser build
-assets/screenshots/           README screenshots
+screenshots/                  README screenshots
 README.md                     Project documentation
 ```
 
@@ -272,7 +275,7 @@ README.md                     Project documentation
 - The older HTML files are still useful as separate milestone builds.
 - Multiplayer depends on PeerJS/WebRTC, so some networks may block connections.
 - Progress is stored locally in the browser.
-- For the screenshots in this README to display on GitHub, the files inside `assets/screenshots/` must exist in the `main` branch.
+- For the screenshots in this README to display on GitHub, the files inside `screenshots/` must exist in the `main` branch.
 
 ---
 
